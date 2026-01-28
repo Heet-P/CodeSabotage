@@ -26,8 +26,9 @@ export default function CodeEditor({ lobbyId, onMount }: CodeEditorProps) {
 
         // Initialize Yjs
         const doc = new Y.Doc();
+        const wsUrl = process.env.NEXT_PUBLIC_YJS_WS_URL || 'ws://localhost:1234';
         const wsProvider = new WebsocketProvider(
-            'ws://localhost:1234', // Yjs server URL
+            wsUrl,
             lobbyId, // Room name
             doc
         );
