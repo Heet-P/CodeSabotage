@@ -1,7 +1,7 @@
 import { Lobby } from '../types';
 import { supabase } from '@/lib/supabaseClient';
 
-const API_URL = 'http://localhost:3001/api/v1';
+const API_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001') + '/api/v1';
 
 export const lobbyService = {
     createLobby: async (userId: string, username: string): Promise<Lobby> => {
