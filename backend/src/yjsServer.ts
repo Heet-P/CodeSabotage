@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
-import * as Y from 'yjs';
-import { setupWSConnection } from 'y-websocket/bin/utils';
+
+// @ts-ignore
+const setupWSConnection = require('y-websocket/bin/utils').setupWSConnection;
 
 // This file is intended to run as a separate process or server
 const port = process.env.YJS_PORT || 1234;

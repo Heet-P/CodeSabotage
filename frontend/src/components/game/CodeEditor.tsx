@@ -1,0 +1,173 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import Editor, { OnMount } from '@monaco-editor/react';
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'y-websocket';
+import { useAuth } from '@/context/AuthContext';
+
+interface CodeEditorProps {
+    lobbyId: string;
+    onMount?: (editor: any, monaco: any) => void;
+}
+
+export default function CodeEditor({ lobbyId, onMount }: CodeEditorProps) {
+    const { user } = useAuth();
+    const editorRef = useRef<any>(null);
+    const [provider, setProvider] = useState<WebsocketProvider | null>(null);
+    const [connected, setConnected] = useState(false);
+
+    const handleEditorDidMount: OnMount = async (editor, monaco) => {
+        editorRef.current = editor;
+        if (onMount) onMount(editor, monaco);
+
+        // Dynamic import to avoid SSR 'window is not defined' error
+        const { MonacoBinding } = await import('y-monaco');
+
+        // Initialize Yjs
+        const doc = new Y.Doc();
+        const wsProvider = new WebsocketProvider(
+            'ws://localhost:1234', // Yjs server URL
+            lobbyId, // Room name
+            doc
+        );
+
+        wsProvider.on('status', (event: any) => {
+            setConnected(event.status === 'connected');
+        });
+
+        setProvider(wsProvider);
+
+        const type = doc.getText('monaco');
+
+        // Bind Yjs to Monaco
+        const binding = new MonacoBinding(
+            type,
+            editor.getModel()!,
+            new Set([editor]),
+            wsProvider.awareness
+        );
+
+        // Set user awareness (cursor info)
+        const getUserColor = (username: string) => {
+            const colors = [
+                '#f87171', '#fb923c', '#fbbf24', '#a3e635', '#34d399',
+                '#22d3ee', '#818cf8', '#e879f9', '#f472b6', '#f43f5e'
+            ];
+            let hash = 0;
+            for (let i = 0; i < username.length; i++) {
+                hash = username.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        };
+
+        const userName = user?.user_metadata.username || user?.email || 'Anonymous';
+        const userColor = getUserColor(userName);
+
+        if (user) {
+            wsProvider.awareness.setLocalStateField('user', {
+                name: userName,
+                color: userColor
+            });
+        }
+
+        // Dynamic Style Injection for Cursors
+        const styleElement = document.createElement('style');
+        document.head.appendChild(styleElement);
+
+        const updateCursorStyles = () => {
+            const states = wsProvider.awareness.getStates();
+            let css = '';
+
+            states.forEach((state: any, clientId: number) => {
+                if (state.user && state.user.color && state.user.name) {
+                    const { color, name } = state.user;
+                    css += `
+                        .yRemoteSelection-${clientId} {
+                            background-color: ${color}50;
+                        }
+                        .yRemoteSelectionHead-${clientId} {
+                            position: absolute;
+                            border-left: ${color} solid 2px;
+                            border-top: ${color} solid 2px;
+                            border-bottom: ${color} solid 2px;
+                            height: 100%;
+                            box-sizing: border-box;
+                        }
+                        .yRemoteSelectionHead-${clientId}::after {
+                            position: absolute;
+                            content: "${name}";
+                            background-color: ${color};
+                            color: #111;
+                            border: 1px solid ${color};
+                            font-size: 10px;
+                            padding: 0px 4px;
+                            border-radius: 4px;
+                            left: -2px;
+                            top: -20px;
+                            white-space: nowrap;
+                            font-family: monospace;
+                            font-weight: bold;
+                            z-index: 10;
+                        }
+                    `;
+                }
+            });
+
+            styleElement.innerHTML = css;
+        };
+
+        wsProvider.awareness.on('change', updateCursorStyles);
+
+        // Initial call to set styles if users are already present
+        updateCursorStyles();
+
+        // Attach cleanup for style element to the provider destroy or binding destroy? 
+        // We need to pass this out to the cleanup function.
+        (wsProvider as any)._styleElement = styleElement;
+
+        // Cleanup
+        const cleanup = () => {
+            wsProvider.awareness.off('change', updateCursorStyles);
+            if ((wsProvider as any)._styleElement && (wsProvider as any)._styleElement.parentNode) {
+                (wsProvider as any)._styleElement.parentNode.removeChild((wsProvider as any)._styleElement);
+            }
+            wsProvider.destroy();
+            binding.destroy();
+        };
+
+        // Store cleanup function in a way that useEffect can access if needed, 
+        // but since this is OnMount, we rely on the component unmount.
+        // However, OnMount doesn't return a cleanup function to React.
+        // We should probably store these in a ref or state to clean up in useEffect.
+        (editor as any)._yjsCleanup = cleanup;
+    };
+
+    useEffect(() => {
+        return () => {
+            if (editorRef.current && (editorRef.current as any)._yjsCleanup) {
+                (editorRef.current as any)._yjsCleanup();
+            }
+        };
+    }, []);
+
+    return (
+        <div className="h-full w-full rounded-lg overflow-hidden border border-gray-800 shadow-xl relative">
+            <Editor
+                height="100%"
+                defaultLanguage="javascript"
+                defaultValue="// Start coding here..."
+                theme="vs-dark"
+                onMount={handleEditorDidMount}
+                options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    padding: { top: 16 },
+                }}
+            />
+            <div className={`absolute bottom-2 right-2 px-2 py-1 rounded text-[10px] font-mono border backdrop-blur-md transition-colors ${connected ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-red-500/10 border-red-500/30 text-red-500'}`}>
+                {connected ? 'LIVE' : 'OFFLINE'}
+            </div>
+        </div>
+    );
+}

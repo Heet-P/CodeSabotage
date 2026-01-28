@@ -27,6 +27,10 @@ class SocketService {
     public leaveLobby(lobbyId: string) {
         this.socket?.emit('lobby:leave', lobbyId);
     }
+
+    public startGame(lobbyId: string) {
+        this.socket?.emit('game:start', lobbyId);
+    }
 }
 
 export const socketService = new SocketService();
