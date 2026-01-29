@@ -96,7 +96,7 @@ export default function LobbyPage() {
             socket.off('sabotage:effect');
             socket.off('meeting:ended');
         };
-    }, [code, user, router]);
+    }, [code, user?.id]); // Only re-run if user ID or code changes
 
     const copyCode = () => {
         navigator.clipboard.writeText(code);
