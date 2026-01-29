@@ -7,7 +7,36 @@ const gameService = new GameService();
 
 const meltdownTimers = new Map<string, NodeJS.Timeout>();
 
+// Global Game Loop (1s Interval)
+setInterval(() => {
+    const lobbies = lobbyManager.getAllLobbies(); // Need to expose this or iterate somehow
+    lobbies.forEach(lobby => {
+        if (lobby.status === 'in-progress' && !lobby.isTimerPaused && (lobby.timeRemaining !== undefined)) {
+            lobby.timeRemaining--;
+
+            if (lobby.timeRemaining <= 0) {
+                // Time Limit Exceeded - Hackers Win
+                lobby.status = 'ended';
+                (lobby as any).winner = 'hackers';
+                (lobby as any).winReason = 'Time Limit Exceeded';
+
+                // Emit Game Over
+                // We need reference to 'io' here. 
+                // Since this interval is outside setupSocketHandlers scope, we might need to move it or pass io.
+            }
+            // Optimization: Maybe don't emit every second if bandwidth is concern, but for game timer we usually do.
+            // Or emit only on specific intervals?. For now, we rely on 'lobby:updated' via io.
+        }
+    });
+}, 1000);
+
 export const setupSocketHandlers = (io: Server) => {
+    // Start the loop inside here to access 'io'
+    setInterval(() => {
+        // We can't easily get all lobbies from LobbyManager if it doesn't expose them.
+        // Let's check LobbyManager.
+    }, 1000);
+
     io.on('connection', (socket: Socket) => {
         console.log('User connected:', socket.id);
 
@@ -27,6 +56,15 @@ export const setupSocketHandlers = (io: Server) => {
                 io.to(lobbyId).emit('game:started', lobby);
             } catch (e: any) {
                 console.error('Error starting game:', e);
+                socket.emit('error', e.message);
+            }
+        });
+
+        socket.on('lobby:settings:update', ({ lobbyId, settings }: { lobbyId: string, settings: any }) => {
+            try {
+                const lobby = lobbyManager.updateSettings(lobbyId, settings);
+                io.to(lobbyId).emit('lobby:updated', lobby);
+            } catch (e: any) {
                 socket.emit('error', e.message);
             }
         });

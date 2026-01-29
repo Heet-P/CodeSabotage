@@ -34,7 +34,8 @@ export class LobbyManager {
                 imposterCount: 1,
                 taskCount: 5,
                 discussionTime: 60,
-                votingTime: 30
+                votingTime: 30,
+                timeLimit: 120 // Default 2 minutes
             },
             status: 'waiting',
             createdAt: Date.now()
@@ -46,6 +47,10 @@ export class LobbyManager {
 
     public getLobby(lobbyId: string): Lobby | undefined {
         return this.lobbies.get(lobbyId);
+    }
+
+    public getAllLobbies(): Lobby[] {
+        return Array.from(this.lobbies.values());
     }
 
     public joinLobby(lobbyId: string, playerId: string, username: string): Lobby {
@@ -64,6 +69,15 @@ export class LobbyManager {
         };
 
         lobby.players.push(newPlayer);
+        return lobby;
+    }
+
+    public updateSettings(lobbyId: string, settings: Partial<GameSettings>): Lobby {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) throw new Error('Lobby not found');
+        if (lobby.status !== 'waiting') throw new Error('Cannot change settings while game is in progress');
+
+        lobby.settings = { ...lobby.settings, ...settings };
         return lobby;
     }
 

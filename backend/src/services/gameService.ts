@@ -86,6 +86,8 @@ export class GameService {
         // Update Status
         lobby.status = 'in-progress';
         lobby.taskProgress = 0;
+        lobby.timeRemaining = lobby.settings.timeLimit || 60; // Default to 60s if not set
+        lobby.isTimerPaused = false;
 
         return lobby;
     }
@@ -284,6 +286,7 @@ export class GameService {
         }
 
         lobby.status = 'meeting';
+        lobby.isTimerPaused = true;
 
         // Clear any sabotage effects (optional, but good practice)
 
@@ -325,6 +328,7 @@ export class GameService {
                 endTime: Date.now() + 45000, // 45 seconds
                 tasks: sabotageTasks
             };
+            lobby.isTimerPaused = true;
         }
 
         return lobby;
@@ -339,6 +343,7 @@ export class GameService {
 
         // Remove emergency tasks from players?
         // Optional, keeping them marked as completed is fine.
+        lobby.isTimerPaused = false;
     }
 
     public checkSabotageTimeout(lobbyId: string): Lobby | null {
@@ -432,6 +437,7 @@ export class GameService {
         // Return to game if not ended
         if (lobby.status !== 'ended') {
             lobby.status = 'in-progress';
+            lobby.isTimerPaused = false;
         }
 
         this.meetingVotes.set(lobby.id, []); // Clear

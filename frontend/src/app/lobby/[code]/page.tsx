@@ -142,8 +142,14 @@ export default function LobbyPage() {
 
                     <div className="bg-white border-4 border-[#2C3A47] px-4 py-2 shadow-[4px_4px_0_rgba(0,0,0,0.2)]">
                         <span className="font-pixel text-lg md:text-xl font-bold tracking-widest text-[#2C3A47]">
-                            {/* Simple Timer Visual - Could be real timer */}
-                            34s
+                            {/* Global Game Timer */}
+                            {lobby.status === 'in-progress' && lobby.timeRemaining !== undefined ? (
+                                <span className={`${lobby.timeRemaining <= 10 ? 'text-red-600 animate-pulse' : 'text-[#2C3A47]'}`}>
+                                    {lobby.isTimerPaused ? <span className="text-[#a55eea]">PAUSED</span> : `${lobby.timeRemaining}s`}
+                                </span>
+                            ) : (
+                                <span className="text-gray-400">--:--</span>
+                            )}
                         </span>
                     </div>
 
@@ -286,14 +292,79 @@ export default function LobbyPage() {
                                 <div className="h-full flex flex-col">
                                     <h2 className="font-pixel text-sm text-[#2C3A47] mb-6 border-b-4 border-[#2C3A47] pb-2">SETTINGS</h2>
                                     <div className="space-y-4 font-pixel text-[10px] text-[#2C3A47] flex-1">
-                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2">
+                                        {/* Impostors */}
+                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2 items-center">
                                             <span>IMPOSTORS:</span>
-                                            <span className="text-[#a55eea]">{lobby.settings.imposterCount}</span>
+                                            {lobby.hostId === user?.id ? (
+                                                <button
+                                                    onClick={() => {
+                                                        const next = lobby.settings.imposterCount === 1 ? 2 : 1;
+                                                        socketService.socket?.emit('lobby:settings:update', {
+                                                            lobbyId: code,
+                                                            settings: { imposterCount: next }
+                                                        });
+                                                    }}
+                                                    className="text-[#a55eea] hover:text-[#9c4be6] hover:bg-white/50 px-2 py-0.5 border border-transparent hover:border-[#a55eea]"
+                                                >
+                                                    {lobby.settings.imposterCount}
+                                                </button>
+                                            ) : (
+                                                <span className="text-[#a55eea]">{lobby.settings.imposterCount}</span>
+                                            )}
                                         </div>
-                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2">
+
+                                        {/* Tasks */}
+                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2 items-center">
                                             <span>TASKS:</span>
-                                            <span className="text-[#4b7bec]">{lobby.settings.taskCount}</span>
+                                            {lobby.hostId === user?.id ? (
+                                                <button
+                                                    onClick={() => {
+                                                        const options = [3, 5, 7];
+                                                        const currentIdx = options.indexOf(lobby.settings.taskCount);
+                                                        const next = options[(currentIdx + 1) % options.length];
+                                                        socketService.socket?.emit('lobby:settings:update', {
+                                                            lobbyId: code,
+                                                            settings: { taskCount: next }
+                                                        });
+                                                    }}
+                                                    className="text-[#4b7bec] hover:text-[#3867d6] hover:bg-white/50 px-2 py-0.5 border border-transparent hover:border-[#4b7bec]"
+                                                >
+                                                    {lobby.settings.taskCount}
+                                                </button>
+                                            ) : (
+                                                <span className="text-[#4b7bec]">{lobby.settings.taskCount}</span>
+                                            )}
                                         </div>
+
+                                        {/* Time Limit */}
+                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2 items-center">
+                                            <span>TIME LIMIT:</span>
+                                            {lobby.hostId === user?.id ? (
+                                                <button
+                                                    onClick={() => {
+                                                        const options = [60, 90, 120, 180];
+                                                        const current = lobby.settings.timeLimit || 120;
+                                                        const currentIdx = options.indexOf(current);
+                                                        const next = options[(currentIdx + 1) % options.length] || 60;
+                                                        socketService.socket?.emit('lobby:settings:update', {
+                                                            lobbyId: code,
+                                                            settings: { timeLimit: next }
+                                                        });
+                                                    }}
+                                                    className="text-[#eb4d4b] hover:text-[#ff7979] hover:bg-white/50 px-2 py-0.5 border border-transparent hover:border-[#eb4d4b]"
+                                                >
+                                                    {lobby.settings.timeLimit || 120}s
+                                                </button>
+                                            ) : (
+                                                <span className="text-[#eb4d4b]">{lobby.settings.timeLimit || 120}s</span>
+                                            )}
+                                        </div>
+
+                                        {lobby.hostId === user?.id && (
+                                            <p className="text-[8px] text-gray-500 mt-2 text-center opacity-70">
+                                                CLICK VALUES TO CHANGE
+                                            </p>
+                                        )}
                                     </div>
 
                                     {lobby.hostId === user?.id ? (

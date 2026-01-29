@@ -31,6 +31,7 @@ export interface GameSettings {
     taskCount: number;
     discussionTime: number;
     votingTime: number;
+    timeLimit: number; // Seconds (e.g. 60, 90, 120)
 }
 
 export interface SabotageStatus {
@@ -48,6 +49,8 @@ export interface Lobby {
     status: 'waiting' | 'starting' | 'in-progress' | 'meeting' | 'ended';
     createdAt: number;
     taskProgress?: number;
+    timeRemaining?: number; // Global game timer
+    isTimerPaused?: boolean;
     winner?: 'developers' | 'hackers';
     winReason?: string;
     sabotage?: SabotageStatus;

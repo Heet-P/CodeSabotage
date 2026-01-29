@@ -31,6 +31,7 @@ export interface GameSettings {
     taskCount: number;
     discussionTime: number;
     votingTime: number;
+    timeLimit: number; // Seconds
 }
 
 export interface SabotageStatus {
@@ -51,6 +52,8 @@ export interface Lobby {
     winner?: 'developers' | 'hackers';
     winReason?: string;
     sabotage?: SabotageStatus;
+    timeRemaining?: number;
+    isTimerPaused?: boolean;
 }
 
 // Socket Events
@@ -64,6 +67,7 @@ export interface ClientToServerEvents {
     'meeting:start': (lobbyId: string) => void;
     'vote:cast': (data: { lobbyId: string, playerId: string, targetId: string | 'skip' }) => void;
     'lobby:reset': (lobbyId: string) => void;
+    'lobby:settings:update': (data: { lobbyId: string, settings: Partial<GameSettings> }) => void;
 }
 
 export interface ServerToClientEvents {
