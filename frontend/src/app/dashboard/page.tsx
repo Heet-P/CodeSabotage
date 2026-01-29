@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { lobbyService } from '@/services/lobbyService';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function DashboardPage() {
     const { user } = useAuth();
@@ -12,6 +13,10 @@ export default function DashboardPage() {
     const [joinCode, setJoinCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Profile Edit State
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [newUsername, setNewUsername] = useState('');
 
     const handleCreateLobby = async () => {
         if (!user) return;
@@ -40,6 +45,22 @@ export default function DashboardPage() {
         }
     };
 
+    const handleUpdateProfile = async () => {
+        if (!newUsername.trim()) return;
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: { username: newUsername.trim() }
+            });
+            if (error) throw error;
+            setIsEditingProfile(false);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-gray-950 text-white p-8 bg-[url('/grid.svg')] bg-cover bg-center">
@@ -52,7 +73,31 @@ export default function DashboardPage() {
                         </h1>
                         <div className="flex items-center gap-4">
                             <div className="text-right">
-                                <p className="font-medium text-white">{user?.user_metadata.username || 'Developer'}</p>
+                                {isEditingProfile ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            value={newUsername}
+                                            onChange={(e) => setNewUsername(e.target.value)}
+                                            className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
+                                            placeholder="New Username"
+                                            autoFocus
+                                        />
+                                        <button onClick={handleUpdateProfile} disabled={loading} className="text-green-400 hover:text-green-300">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        </button>
+                                        <button onClick={() => setIsEditingProfile(false)} className="text-red-400 hover:text-red-300">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="group flex items-center gap-2 cursor-pointer" onClick={() => {
+                                        setNewUsername(user?.user_metadata.username || '');
+                                        setIsEditingProfile(true);
+                                    }}>
+                                        <p className="font-medium text-white group-hover:text-blue-400 transition-colors">{user?.user_metadata.username || 'Developer'}</p>
+                                        <svg className="w-3 h-3 text-gray-500 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </div>
+                                )}
                                 <p className="text-xs text-gray-500">{user?.email}</p>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center font-bold text-lg">

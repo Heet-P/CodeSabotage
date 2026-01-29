@@ -14,11 +14,16 @@ export default function GameOverScreen({ lobby, currentUser, onReturnToLobby }: 
     const isDeveloper = currentUser?.role === 'developer';
     const isWinner = (winner === 'developers' && isDeveloper) || (winner === 'hackers' && !isDeveloper);
 
-    // Determine color scheme based on winner
-    const themeColor = winner === 'developers' ? 'green' : 'red';
-    const bgColor = winner === 'developers' ? 'bg-green-950' : 'bg-red-950';
-    const borderColor = winner === 'developers' ? 'border-green-500' : 'border-red-500';
-    const textColor = winner === 'developers' ? 'text-green-400' : 'text-red-400';
+    // Determine color scheme based on user's result (Victory = Green, Defeat = Red)
+    // User requested specifically that Hacker defeat should be red (which aligns with a generic "Defeat" screen)
+    const baseColor = isWinner ? 'green' : 'red';
+
+    const bgColor = isWinner ? 'bg-green-950' : 'bg-red-950';
+    const borderColor = isWinner ? 'border-green-500' : 'border-red-500';
+    const textColor = isWinner ? 'text-green-400' : 'text-red-400';
+    const buttonGradient = isWinner
+        ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-green-900/50'
+        : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50';
 
     return (
         <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center ${bgColor} animate-in fade-in duration-1000`}>
@@ -63,10 +68,7 @@ export default function GameOverScreen({ lobby, currentUser, onReturnToLobby }: 
                             onClick={onReturnToLobby}
                             className={`
                                 w-full py-4 rounded-xl font-bold text-lg text-white transition-all
-                                ${winner === 'developers'
-                                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-green-900/50'
-                                    : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50'
-                                }
+                                ${buttonGradient}
                                 shadow-lg hover:scale-[1.02] active:scale-[0.98]
                             `}
                         >

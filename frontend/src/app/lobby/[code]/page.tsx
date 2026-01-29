@@ -15,6 +15,7 @@ import GameOverScreen from '@/components/game/GameOverScreen';
 
 import TaskCompletionConfetti from '@/components/ui/TaskCompletionConfetti';
 import PageTransition from '@/components/ui/PageTransition';
+import RoleReveal from '@/components/game/RoleReveal';
 
 export default function LobbyPage() {
     const params = useParams();
@@ -24,6 +25,7 @@ export default function LobbyPage() {
     const editorRef = useRef<any>(null);
     const [isFrozen, setIsFrozen] = useState(false); // Sabotage State
     const [showConfetti, setShowConfetti] = useState(false);
+    const [hasRevealShown, setHasRevealShown] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -79,6 +81,7 @@ export default function LobbyPage() {
 
         socket.on('game:ended', (updatedLobby: Lobby) => {
             setLobby(updatedLobby);
+            setHasRevealShown(false); // Reset for next game
         });
 
         return () => {
@@ -105,10 +108,20 @@ export default function LobbyPage() {
         );
     }
 
+    const myPlayer = lobby.players.find(p => p.id === user?.id);
+
     return (
         <ProtectedRoute>
             <PageTransition className="h-screen bg-gray-950 text-white overflow-hidden flex flex-col">
                 <TaskCompletionConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
+
+                {/* Role Reveal Overlay */}
+                {lobby.status === 'in-progress' && !hasRevealShown && myPlayer && (
+                    <RoleReveal
+                        role={myPlayer.role || 'developer'}
+                        onComplete={() => setHasRevealShown(true)}
+                    />
+                )}
                 <div className="flex-1 flex flex-col p-4 gap-4 h-full">
                     <header className="flex justify-between items-center bg-gray-900/50 p-4 rounded-xl border border-gray-800 shrink-0">
                         <div>
