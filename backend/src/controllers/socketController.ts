@@ -7,6 +7,7 @@ const gameService = new GameService();
 
 const meltdownTimers = new Map<string, NodeJS.Timeout>();
 let gameLoopInterval: NodeJS.Timeout | null = null;
+const socketMap = new Map<string, { lobbyId: string, playerId: string }>();
 
 // Global Game Loop (1s Interval)
 export const setupSocketHandlers = (io: Server) => {
@@ -37,11 +38,25 @@ export const setupSocketHandlers = (io: Server) => {
     io.on('connection', (socket: Socket) => {
         console.log('User connected:', socket.id);
 
-        socket.on('lobby:join', (lobbyId: string) => {
+        socket.on('lobby:join', ({ lobbyId, playerId }: { lobbyId: string, playerId: string }) => {
             const lobby = lobbyManager.getLobby(lobbyId);
             if (lobby) {
                 socket.join(lobbyId);
+                socketMap.set(socket.id, { lobbyId, playerId });
                 io.to(lobbyId).emit('lobby:updated', lobby);
+            }
+        });
+
+        socket.on('lobby:leave', (lobbyId: string) => {
+            const data = socketMap.get(socket.id);
+            if (data) {
+                const updatedLobby = lobbyManager.removePlayer(lobbyId, data.playerId);
+                socket.leave(lobbyId);
+                socketMap.delete(socket.id);
+
+                if (updatedLobby) {
+                    io.to(lobbyId).emit('lobby:updated', updatedLobby);
+                }
             }
         });
 
@@ -169,7 +184,19 @@ export const setupSocketHandlers = (io: Server) => {
 
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
-            // Handle player disconnect/cleanup if needed
+            const data = socketMap.get(socket.id);
+            if (data) {
+                const { lobbyId, playerId } = data;
+                console.log(`Removing player ${playerId} from lobby ${lobbyId} due to disconnect`);
+
+                const updatedLobby = lobbyManager.removePlayer(lobbyId, playerId);
+                socketMap.delete(socket.id);
+
+                if (updatedLobby) {
+                    io.to(lobbyId).emit('lobby:updated', updatedLobby);
+                    io.to(lobbyId).emit('player:left', playerId);
+                }
+            }
         });
     });
 };

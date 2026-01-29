@@ -20,8 +20,8 @@ class SocketService {
         }
     }
 
-    public joinLobby(lobbyId: string) {
-        this.socket?.emit('lobby:join', lobbyId);
+    public joinLobby(lobbyId: string, playerId: string) {
+        this.socket?.emit('lobby:join', { lobbyId, playerId });
     }
 
     public leaveLobby(lobbyId: string) {

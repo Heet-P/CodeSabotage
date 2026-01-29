@@ -36,7 +36,9 @@ export default function LobbyPage() {
         const socket = socketService.connect();
 
         // Join room
-        socketService.joinLobby(code);
+        if (user?.id) {
+            socketService.joinLobby(code, user.id);
+        }
 
         // Listen for updates
         socket.on('lobby:updated', (updatedLobby: Lobby) => {

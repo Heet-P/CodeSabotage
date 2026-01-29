@@ -58,7 +58,7 @@ export interface Lobby {
 
 // Socket Events
 export interface ClientToServerEvents {
-    'lobby:join': (lobbyId: string) => void;
+    'lobby:join': (payload: { lobbyId: string, playerId: string }) => void;
     'lobby:leave': (lobbyId: string) => void;
     'player:ready': (lobbyId: string, isReady: boolean) => void;
     'game:start': (lobbyId: string) => void;
