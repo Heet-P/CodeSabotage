@@ -13,6 +13,9 @@ import SabotageMenu from '@/components/game/SabotageMenu';
 import MeetingModal from '@/components/game/MeetingModal';
 import GameOverScreen from '@/components/game/GameOverScreen';
 
+import TaskCompletionConfetti from '@/components/ui/TaskCompletionConfetti';
+import PageTransition from '@/components/ui/PageTransition';
+
 export default function LobbyPage() {
     const params = useParams();
     const code = params.code as string;
@@ -20,6 +23,7 @@ export default function LobbyPage() {
     const [lobby, setLobby] = useState<Lobby | null>(null);
     const editorRef = useRef<any>(null);
     const [isFrozen, setIsFrozen] = useState(false); // Sabotage State
+    const [showConfetti, setShowConfetti] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -43,11 +47,9 @@ export default function LobbyPage() {
         });
 
         socket.on('task:success', (taskId: string) => {
-            // Optional: Show success animation/toast
-            console.log('Task Completed:', taskId);
-            // We could update local state here if we wanted immediate feedback before lobby update
-            // But lobby:updated should handle it.
-            // Maybe play a sound?
+            // Success animation
+            setShowConfetti(true);
+            // Play sound effect here if implemented
         });
 
         socket.on('task:error', (msg: string) => {
@@ -73,9 +75,6 @@ export default function LobbyPage() {
 
         socket.on('meeting:ended', (updatedLobby: Lobby) => {
             setLobby(updatedLobby);
-            // Optionally show result alert
-            // For MVP, the Lobby Status changing back to 'in-progress' will close the modal
-            // We just need to make sure state is synced
         });
 
         socket.on('game:ended', (updatedLobby: Lobby) => {
@@ -108,9 +107,10 @@ export default function LobbyPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-950 text-white p-8">
-                <div className="max-w-7xl mx-auto">
-                    <header className="flex justify-between items-center mb-8 border-b border-gray-800 pb-6">
+            <PageTransition className="h-screen bg-gray-950 text-white overflow-hidden flex flex-col">
+                <TaskCompletionConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
+                <div className="flex-1 flex flex-col p-4 gap-4 h-full">
+                    <header className="flex justify-between items-center bg-gray-900/50 p-4 rounded-xl border border-gray-800 shrink-0">
                         <div>
                             <h1 className="text-3xl font-black tracking-tight text-white mb-2 flex items-center gap-4">
                                 LOBBY <span className="text-blue-500 cursor-pointer hover:underline" onClick={copyCode}>#{code}</span>
@@ -118,7 +118,7 @@ export default function LobbyPage() {
                             </h1>
                             <p className="text-gray-400 text-sm">Waiting for players...</p>
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 items-center">
                             <div className="px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 flex items-center gap-2">
                                 <span className="text-gray-500 text-xs font-bold tracking-wider">STATUS</span>
                                 <div className={`w-2 h-2 rounded-full ${lobby.status === 'waiting' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
@@ -126,12 +126,23 @@ export default function LobbyPage() {
                                     {lobby.status.toUpperCase()}
                                 </span>
                             </div>
+                            <button
+                                onClick={() => {
+                                    if (confirm('Are you sure you want to leave?')) {
+                                        socketService.leaveLobby(code);
+                                        router.push('/dashboard');
+                                    }
+                                }}
+                                className="px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-800 rounded-lg text-sm font-bold transition-colors"
+                            >
+                                LEAVE
+                            </button>
                         </div>
                     </header>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
                         {/* Editor Area (Left 2/3) */}
-                        <div className="lg:col-span-2 h-[600px] flex flex-col gap-4 relative">
+                        <div className="lg:col-span-2 h-full flex flex-col gap-4 relative">
                             {isFrozen && (
                                 <div className="absolute inset-0 z-50 bg-cyan-500/10 backdrop-blur-sm border-2 border-cyan-500 rounded-xl flex items-center justify-center animate-pulse pointer-events-none">
                                     <div className="bg-black/80 px-6 py-4 rounded-lg border border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.5)]">
@@ -320,7 +331,7 @@ export default function LobbyPage() {
                         />
                     )}
                 </div>
-            </div>
+            </PageTransition>
         </ProtectedRoute>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { Lobby } from '@/types';
+import TaskCompletionConfetti from '@/components/ui/TaskCompletionConfetti';
 
 interface GameOverScreenProps {
     lobby: Lobby;
@@ -21,6 +22,7 @@ export default function GameOverScreen({ lobby, currentUser, onReturnToLobby }: 
 
     return (
         <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center ${bgColor} animate-in fade-in duration-1000`}>
+            {isWinner && <TaskCompletionConfetti trigger={true} />}
             {/* Background effects */}
             <div className="absolute inset-0 bg-[url('/grid-pattern.png')] opcode-20 pointer-events-none"></div>
             <div className={`absolute inset-0 bg-gradient-to-t from-black via-transparent to-black`}></div>
