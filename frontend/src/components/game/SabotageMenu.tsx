@@ -71,68 +71,55 @@ export default function SabotageMenu({ onTriggerSabotage }: SabotageMenuProps) {
     };
 
     return (
-        <div className="bg-gray-900/30 p-6 rounded-xl border border-red-900/30 h-full flex flex-col shadow-[0_0_15px_rgba(220,38,38,0.1)]">
-            <h2 className="text-sm font-bold text-red-500 mb-4 tracking-wider flex justify-between items-center animate-pulse">
-                SABOTAGE MENU
-                <span className="text-[10px] bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded">HACKER ACCESS</span>
+        <div className="flex flex-col h-full">
+            <h2 className="font-pixel text-sm text-[#eb4d4b] mb-4 border-b-4 border-[#eb4d4b] pb-2 flex justify-between">
+                SABOTAGE
+                <span className="text-[10px] bg-[#eb4d4b] text-white px-2 py-0.5 font-pixel">HACKER</span>
             </h2>
 
-            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
                 {abilities.map((ability) => {
                     const isCooldown = !!cooldowns[ability.id];
                     return (
                         <div
                             key={ability.id}
                             className={`
-                                relative overflow-hidden rounded-lg border transition-all duration-300
+                                relative overflow-hidden transition-all duration-300 border-4
                                 ${isCooldown
-                                    ? 'bg-gray-900/50 border-gray-800 opacity-75 cursor-not-allowed'
-                                    : 'bg-black/40 border-gray-800 hover:border-red-500/50 hover:bg-red-900/10 cursor-pointer group'
+                                    ? 'bg-[#d1ccc0] border-[#84817a] opacity-75 cursor-not-allowed'
+                                    : 'bg-white border-[#84817a] hover:border-[#eb4d4b] cursor-pointer group shadow-[4px_4px_0_rgba(0,0,0,0.1)] hover:shadow-[4px_4px_0_rgba(235,77,75,0.2)]'
                                 }
                             `}
                             onClick={() => !isCooldown && handleTrigger(ability.id, ability.cooldown)}
                         >
-                            {/* Progress bar background for cooldown */}
+                            {/* Progress bar background for cooldown overlay */}
                             {isCooldown && (
-                                <div
-                                    className="absolute inset-0 bg-gray-800/80 z-10 flex items-center justify-center font-mono text-xl font-bold text-white transition-all"
-                                    style={{ clipPath: `inset(0 0 0 ${(1 - (cooldowns[ability.id] / ability.cooldown)) * 100}%)` }} // Inverse logic for fill? No, simpler to just text overlay
-                                >
+                                <div className="absolute inset-0 bg-[#2C3A47]/80 z-20 flex items-center justify-center">
+                                    <span className="text-xl font-pixel text-white drop-shadow-md">{cooldowns[ability.id]}s</span>
                                 </div>
                             )}
 
-                            {isCooldown && (
-                                <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                    <span className="text-2xl font-black text-white/90 drop-shadow-md">{cooldowns[ability.id]}s</span>
-                                </div>
-                            )}
-
-                            <div className="p-4 relative z-0">
+                            <div className="p-4 relative z-10">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className={`
-                                        p-2 rounded bg-gray-900 border border-gray-700 
-                                        ${!isCooldown && 'group-hover:border-' + ability.color + '-500/50 group-hover:text-' + ability.color + '-400'}
+                                        p-2 border-2 border-[#2C3A47] bg-[#F7F1E3]
+                                        ${!isCooldown && 'group-hover:bg-[#eb4d4b]/10'}
                                     `}>
                                         {ability.icon}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-200 text-sm group-hover:text-white transition-colors">
+                                        <h3 className="font-pixel text-xs text-[#2C3A47] group-hover:text-[#eb4d4b] transition-colors">
                                             {ability.name}
                                         </h3>
-                                        <span className="text-[10px] text-gray-500 font-mono">
-                                            Cooldown: {ability.cooldown}s
+                                        <span className="text-[10px] text-[#84817a] font-mono">
+                                            COOLDOWN: {ability.cooldown}s
                                         </span>
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-400 leading-relaxed pl-[3.25rem]">
+                                <p className="text-[10px] font-mono text-[#2C3A47] leading-tight pl-[3.25rem]">
                                     {ability.description}
                                 </p>
                             </div>
-
-                            {/* Hover Effect Glitch Line */}
-                            {!isCooldown && (
-                                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                            )}
                         </div>
                     );
                 })}

@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 interface MeetingModalProps {
     lobby: Lobby;
-    currentUser: any;
+    currentUser: Player | undefined;
     onVote: (targetId: string | 'skip') => void;
 }
 
@@ -21,23 +21,26 @@ export default function MeetingModal({ lobby, currentUser, onVote }: MeetingModa
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-gray-900 border-2 border-red-600 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(220,38,38,0.3)] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300 p-4">
+            <div className="bg-[#F7F1E3] border-4 border-[#2C3A47] rounded-none w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[12px_12px_0_rgba(0,0,0,0.5)] overflow-hidden">
 
                 {/* Header */}
-                <div className="bg-red-900/30 p-6 border-b border-red-900/50 flex justify-between items-center">
+                <div className="bg-[#eb4d4b] p-6 border-b-4 border-[#2C3A47] flex justify-between items-center relative">
+                    {/* Decorative corner accents */}
+                    <div className="absolute top-2 left-2 w-2 h-2 bg-white/20"></div>
+                    <div className="absolute top-2 right-2 w-2 h-2 bg-white/20"></div>
+
                     <div>
-                        <h2 className="text-3xl font-black text-white tracking-widest uppercase">Emergency Meeting</h2>
-                        <p className="text-red-300 text-sm font-mono mt-1">WHO IS THE IMPOSTER?</p>
+                        <h2 className="text-xl md:text-3xl font-pixel text-white tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,0.2)]">EMERGENCY MEETING</h2>
+                        <p className="text-red-100 text-xs font-pixel mt-2">WHO IS THE IMPOSTER?</p>
                     </div>
-                    <div className="text-right">
-                        <div className="text-4xl font-mono font-bold text-white">00:00</div>
-                        <div className="text-xs text-gray-400">VOTING ENDS IN</div>
+                    <div className="text-right border-4 border-[#c0392b] bg-[#c0392b] p-2 shadow-inner">
+                        <div className="text-2xl font-pixel font-bold text-white">00:00</div>
                     </div>
                 </div>
 
                 {/* Players Grid */}
-                <div className="p-8 grid grid-cols-2 md:grid-cols-4 gap-4 overflow-y-auto flex-1 bg-[url('/grid-pattern.png')] bg-repeat opacity-90">
+                <div className="p-8 grid grid-cols-2 md:grid-cols-4 gap-6 overflow-y-auto flex-1 bg-[#d1ccc0]">
                     {lobby.players.map((player) => {
                         const isDead = !player.isAlive;
                         const isMe = player.id === currentUser?.id;
@@ -47,46 +50,50 @@ export default function MeetingModal({ lobby, currentUser, onVote }: MeetingModa
                             <div
                                 key={player.id}
                                 className={`
-                                    relative p-4 rounded-xl border-2 transition-all duration-200
-                                    ${isDead ? 'border-gray-800 bg-gray-900/50 opacity-50 grayscale' :
-                                        isSelected ? 'border-red-500 bg-red-900/20 scale-105' :
-                                            'border-gray-700 bg-gray-800/50 hover:border-gray-500'}
+                                    relative p-4 border-4 transition-all duration-200 flex flex-col items-center
+                                    ${isDead ? 'border-[#84817a] bg-[#84817a]/50 opacity-50 grayscale' :
+                                        isSelected ? 'border-[#eb4d4b] bg-white scale-105 shadow-[6px_6px_0_rgba(235,77,75,0.3)]' :
+                                            'border-[#2C3A47] bg-white hover:border-[#eb4d4b] hover:-translate-y-1 hover:shadow-[4px_4px_0_rgba(0,0,0,0.2)]'}
                                 `}
                             >
                                 {/* Role Tag (Only visible to me or if game over) */}
                                 {isMe && (
-                                    <div className="absolute top-2 right-2 text-[10px] font-bold bg-gray-700/50 px-1.5 py-0.5 rounded text-gray-300">
+                                    <div className="absolute top-2 right-2 text-[8px] font-pixel bg-[#2C3A47] px-1 py-1 text-white">
                                         YOU
                                     </div>
                                 )}
 
                                 {/* Avatar */}
-                                <div className="flex flex-col items-center gap-2">
+                                <div className="mb-3 relative">
                                     <div
-                                        className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg border-2 border-white/10"
+                                        className="w-12 h-12 border-4 border-[#2C3A47] flex items-center justify-center font-pixel text-lg text-white shadow-sm"
                                         style={{ backgroundColor: player.color }}
                                     >
                                         {player.username[0].toUpperCase()}
                                     </div>
-                                    <div className="text-center">
-                                        <p className="font-bold text-gray-200 truncate max-w-[100px]">{player.username}</p>
-                                        {isDead && <span className="text-red-500 text-xs font-bold uppercase">DEAD</span>}
-                                    </div>
+                                    {isDead && (
+                                        <div className="absolute -bottom-2 -right-2 text-xl">💀</div>
+                                    )}
+                                </div>
+
+                                <div className="text-center w-full">
+                                    <p className="font-pixel text-[10px] text-[#2C3A47] truncate w-full mb-1">{player.username}</p>
+                                    {isDead && <span className="text-[#c0392b] text-[8px] font-pixel bg-red-100 px-1">DEAD</span>}
                                 </div>
 
                                 {/* Vote Button */}
                                 {!isDead && !hasVoted && !isMe && currentUser?.isAlive && (
                                     <button
                                         onClick={() => handleVote(player.id)}
-                                        className="mt-3 w-full py-1.5 bg-red-600/20 border border-red-600/50 hover:bg-red-600 hover:text-white text-red-500 text-xs font-bold rounded transition-colors"
+                                        className="mt-3 w-full py-2 bg-[#eb4d4b] hover:bg-[#ff7979] border-2 border-[#c0392b] text-white text-[8px] font-pixel shadow-[2px_2px_0_#962f25] active:translate-y-0.5 active:shadow-none transition-all"
                                     >
                                         VOTE
                                     </button>
                                 )}
 
-                                {/* Vote Status (Hidden in real Among Us, but shown for confirming own vote) */}
+                                {/* Vote Status */}
                                 {isSelected && (
-                                    <div className="mt-3 w-full py-1.5 bg-red-600 text-white text-xs font-bold rounded text-center">
+                                    <div className="mt-3 w-full py-2 bg-[#2C3A47] text-white text-[8px] font-pixel text-center">
                                         VOTED
                                     </div>
                                 )}
@@ -96,21 +103,21 @@ export default function MeetingModal({ lobby, currentUser, onVote }: MeetingModa
                 </div>
 
                 {/* Footer / Skip */}
-                <div className="p-6 bg-gray-900 border-t border-gray-800 flex justify-between items-center">
-                    <div className="text-gray-500 text-sm">
-                        {hasVoted ? 'Waiting for others...' : 'Cast your vote or skip'}
+                <div className="p-6 bg-[#F7F1E3] border-t-4 border-[#2C3A47] flex justify-between items-center">
+                    <div className="text-[#2C3A47] text-xs font-pixel">
+                        {hasVoted ? 'WAITING FOR OTHERS...' : 'CAST VOTE OR SKIP'}
                     </div>
                     <button
                         onClick={() => handleVote('skip')}
                         disabled={hasVoted || !currentUser?.isAlive}
                         className={`
-                            px-6 py-3 rounded-lg font-bold transition-all
+                            px-6 py-4 border-4 font-pixel text-xs transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1
                             ${hasVoted
-                                ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                : 'bg-gray-700 hover:bg-gray-600 text-white hover:scale-105 active:scale-95'}
+                                ? 'bg-[#d1ccc0] border-[#84817a] text-[#84817a] cursor-not-allowed shadow-none'
+                                : 'bg-[#7f8fa6] hover:bg-[#a4b0be] border-[#2C3A47] text-white'}
                         `}
                     >
-                        SKIP VOTE {selectedVote === 'skip' && '(SELECTED)'}
+                        SKIP VOTE {selectedVote === 'skip' && '<-'}
                     </button>
                 </div>
             </div>

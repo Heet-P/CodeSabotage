@@ -112,7 +112,15 @@ export default function LobbyPage() {
 
     return (
         <ProtectedRoute>
-            <PageTransition className="h-screen bg-gray-950 text-white overflow-hidden flex flex-col">
+            <PageTransition className="h-screen bg-[#F7F1E3] font-mono text-[#2C3A47] overflow-hidden flex flex-col p-4">
+                <style jsx global>{`
+                    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+                    .font-pixel { font-family: 'Press Start 2P', cursive; }
+                    .retro-border { border: 4px solid #2C3A47; box-shadow: 6px 6px 0px rgba(0,0,0,0.2); }
+                    .retro-panel { background: #F7F1E3; border: 4px solid #84817a; position: relative; }
+                    .retro-panel::after { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border: 4px solid #2C3A47; pointer-events: none; z-index: 10; }
+                `}</style>
+
                 <TaskCompletionConfetti trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
 
                 {/* Role Reveal Overlay */}
@@ -122,119 +130,130 @@ export default function LobbyPage() {
                         onComplete={() => setHasRevealShown(true)}
                     />
                 )}
-                <div className="flex-1 flex flex-col p-4 gap-4 h-full">
-                    <header className="flex justify-between items-center bg-gray-900/50 p-4 rounded-xl border border-gray-800 shrink-0">
-                        <div>
-                            <h1 className="text-3xl font-black tracking-tight text-white mb-2 flex items-center gap-4">
-                                LOBBY <span className="text-blue-500 cursor-pointer hover:underline" onClick={copyCode}>#{code}</span>
-                                <span className="text-[10px] font-normal text-gray-500 bg-gray-900 px-2 py-1 rounded border border-gray-800 tracking-wider">CLICK TO COPY</span>
-                            </h1>
-                            <p className="text-gray-400 text-sm">Waiting for players...</p>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                            <div className="px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 flex items-center gap-2">
-                                <span className="text-gray-500 text-xs font-bold tracking-wider">STATUS</span>
-                                <div className={`w-2 h-2 rounded-full ${lobby.status === 'waiting' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                                <span className={`font-mono font-bold ${lobby.status === 'waiting' ? 'text-green-400' : 'text-yellow-400'}`}>
-                                    {lobby.status.toUpperCase()}
-                                </span>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (confirm('Are you sure you want to leave?')) {
-                                        socketService.leaveLobby(code);
-                                        router.push('/dashboard');
-                                    }
-                                }}
-                                className="px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-800 rounded-lg text-sm font-bold transition-colors"
-                            >
-                                LEAVE
-                            </button>
-                        </div>
-                    </header>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
-                        {/* Editor Area (Left 2/3) */}
-                        <div className="lg:col-span-2 h-full flex flex-col gap-4 relative">
-                            {isFrozen && (
-                                <div className="absolute inset-0 z-50 bg-cyan-500/10 backdrop-blur-sm border-2 border-cyan-500 rounded-xl flex items-center justify-center animate-pulse pointer-events-none">
-                                    <div className="bg-black/80 px-6 py-4 rounded-lg border border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.5)]">
-                                        <h2 className="text-3xl font-black text-cyan-400 tracking-widest text-center mb-2">SYSTEM FROZEN</h2>
-                                        <p className="text-cyan-200/70 text-center font-mono text-sm">HACKER ATTACK IN PROGRESS</p>
+                {/* Header Row */}
+                <header className="flex justify-between items-center mb-4 shrink-0">
+                    <div className="bg-[#F0932B] border-4 border-[#A9561E] px-4 py-2 shadow-[4px_4px_0_rgba(0,0,0,0.2)]">
+                        <h1 className="text-sm md:text-base font-pixel text-white flex items-center gap-3">
+                            ROUND 1/4 <span className="text-[#2C3A47] opacity-50">|</span> <span className="text-white text-[10px] md:text-xs">LOBBY: {code}</span>
+                        </h1>
+                    </div>
+
+                    <div className="bg-white border-4 border-[#2C3A47] px-4 py-2 shadow-[4px_4px_0_rgba(0,0,0,0.2)]">
+                        <span className="font-pixel text-lg md:text-xl font-bold tracking-widest text-[#2C3A47]">
+                            {/* Simple Timer Visual - Could be real timer */}
+                            34s
+                        </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => {
+                                if (confirm('Are you sure you want to leave?')) {
+                                    socketService.leaveLobby(code);
+                                    router.push('/dashboard');
+                                }
+                            }}
+                            className="bg-[#eb4d4b] hover:bg-[#ff7979] text-white border-4 border-[#c0392b] px-4 py-2 font-pixel text-[10px] shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all"
+                        >
+                            LEAVE
+                        </button>
+                    </div>
+                </header>
+
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
+                    {/* Left Sidebar (Players & Stats) */}
+                    <div className="space-y-6 lg:col-span-1 flex flex-col">
+                        {/* Player List */}
+                        <div className="retro-panel p-4 flex-1">
+                            <h2 className="font-pixel text-sm text-[#2C3A47] mb-6 border-b-4 border-[#2C3A47] pb-2">PLAYERS</h2>
+                            <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar max-h-[40vh]">
+                                {lobby.players.map((player) => (
+                                    <div key={player.id} className="flex items-center gap-3 group">
+                                        <div className="w-4 h-4 border-2 border-[#2C3A47]" style={{ backgroundColor: player.color }}></div>
+                                        <span className="font-pixel text-[10px] truncate text-[#2C3A47] group-hover:underline cursor-default">
+                                            {player.username}
+                                            {player.id === user?.id && <span className="text-[#F0932B]"> (YOU)</span>}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Test Cases / Stats */}
+                        <div className="retro-panel p-4">
+                            <h2 className="font-pixel text-sm text-[#2C3A47] mb-4 border-b-4 border-[#2C3A47] pb-2">STATUS</h2>
+                            {lobby.status === 'in-progress' && (
+                                <div className="space-y-4">
+                                    <div className="bg-[#d1ccc0] border-2 border-[#84817a] p-2">
+                                        <p className="font-pixel text-[8px] mb-1">TASK PROGRESS</p>
+                                        <div className="h-4 bg-white border-2 border-[#2C3A47] relative">
+                                            <div
+                                                className="h-full bg-[#44BD32]"
+                                                style={{ width: `${lobby.taskProgress || 0}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-[#d1ccc0] border-2 border-[#84817a] p-2 flex justify-between items-center">
+                                        <span className="font-pixel text-[8px]">ALIVE: {lobby.players.length}</span>
                                     </div>
                                 </div>
                             )}
-                            <div className="flex-1 bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden relative">
+                            {lobby.status === 'waiting' && <p className="font-pixel text-[10px] text-[#2C3A47]">WAITING FOR HOST...</p>}
+                        </div>
+                    </div>
+
+                    {/* Editor Area (Center) */}
+                    <div className="lg:col-span-2 h-full flex flex-col gap-4 relative">
+                        {isFrozen && (
+                            <div className="absolute inset-0 z-50 bg-[#70C5CE]/30 backdrop-blur-sm flex items-center justify-center animate-pulse pointer-events-none">
+                                <div className="bg-[#F0932B] px-8 py-6 border-4 border-[#A9561E] shadow-[8px_8px_0_rgba(0,0,0,0.5)]">
+                                    <h2 className="text-2xl font-pixel text-white text-center mb-2 drop-shadow-md">FROZEN!</h2>
+                                    <p className="text-white text-center font-pixel text-[10px]">HACKER ATTACK</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* The Editor Container - Dark Frame with Inner Border */}
+                        <div className="flex-1 bg-[#1e272e] p-2 border-4 border-[#2C3A47] shadow-[6px_6px_0_rgba(0,0,0,0.2)] relative flex flex-col">
+                            {/* Mac-style or Retro Window Header */}
+                            <div className="bg-[#808e9b] h-6 mb-2 flex items-center gap-2 px-2 border-b-2 border-[#485460]">
+                                <div className="w-2 h-2 bg-[#ff5e57] rounded-sm"></div>
+                                <div className="w-2 h-2 bg-[#ffdd59] rounded-sm"></div>
+                                <div className="w-2 h-2 bg-[#05c46b] rounded-sm"></div>
+                                <span className="ml-2 font-mono text-[10px] text-[#d2dae2]">main.py</span>
+                            </div>
+
+                            <div className="flex-1 relative overflow-hidden">
                                 <CodeEditor
                                     lobbyId={code}
                                     onMount={(editor, monaco) => {
-                                        console.log('LobbyPage: CodeEditor mounted, setting ref');
                                         editorRef.current = editor;
                                     }}
                                 />
-                                <div className="absolute top-4 right-4 bg-gray-800/80 backdrop-blur px-3 py-1 rounded text-xs text-gray-400 pointer-events-none">
-                                    Real-time Editor
-                                </div>
-
-                                {/* Emergency Meeting Button */}
-                                {lobby.status === 'in-progress' && (
-                                    <button
-                                        onClick={() => {
-                                            if (confirm('Call an Emergency Meeting?')) {
-                                                socketService.socket?.emit('meeting:start', code);
-                                            }
-                                        }}
-                                        className="absolute bottom-6 left-6 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-full shadow-lg border-2 border-red-800 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 z-10"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                                        </svg>
-                                        EMERGENCY
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Sidebar (Right 1/3) */}
-                        <div className="space-y-6">
-                            {/* Player List */}
-                            <div className="bg-gray-900/30 p-6 rounded-xl border border-gray-800">
-                                <h2 className="text-sm font-bold text-gray-400 mb-4 tracking-wider flex justify-between items-center">
-                                    PLAYERS
-                                    <span className="text-white">{lobby.players.length}/{lobby.settings.maxPlayers}</span>
-                                </h2>
-                                <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {lobby.players.map((player) => (
-                                        <div key={player.id} className="bg-gray-900/50 border border-gray-800 p-3 rounded-lg flex items-center gap-3 hover:bg-gray-800/50 transition-colors">
-                                            <div
-                                                className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-lg text-xs"
-                                                style={{ backgroundColor: player.color }}
-                                            >
-                                                {player.username[0].toUpperCase()}
-                                            </div>
-                                            <div className="overflow-hidden flex-1">
-                                                <p className="font-medium text-sm flex items-center gap-2 truncate text-gray-200">
-                                                    {player.username}
-                                                    {player.isHost && <span className="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded border border-yellow-500/20 font-bold">HOST</span>}
-                                                    {player.id === user?.id && <span className="text-[9px] bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded border border-blue-500/20 font-bold">YOU</span>}
-                                                </p>
-                                                {/* Status indicator */}
-                                                <div className="flex items-center gap-1.5 mt-0.5">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${player.isReady ? 'bg-green-500' : 'bg-gray-600'}`}></div>
-                                                    <p className="text-[10px] text-gray-500 font-medium">{player.isReady ? 'READY' : 'NOT READY'}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
 
-                            {/* Sidebar Content Switch */}
+                            {/* Emergency Button Positioned Absolute or Static at bottom */}
                             {lobby.status === 'in-progress' && (
-                                <div className="mb-6">
-                                    <ProgressBar progress={lobby.taskProgress || 0} />
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (confirm('Call an Emergency Meeting?')) {
+                                            socketService.socket?.emit('meeting:start', code);
+                                        }
+                                    }}
+                                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#eb4d4b] hover:bg-[#ff7979] text-white font-pixel text-xs py-3 px-8 border-4 border-[#c0392b] shadow-[4px_4px_0_rgba(0,0,0,0.3)] active:shadow-none active:translate-y-1 z-20 transition-all flex items-center gap-2"
+                                >
+                                    <span className="animate-pulse">⚠️</span> EMERGENCY
+                                </button>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar (Tasks/Action) */}
+                    <div className="space-y-6 lg:col-span-1 h-full overflow-hidden flex flex-col">
+                        <div className="retro-panel p-4 h-full flex flex-col relative">
+                            {/* Paper texture overlay could go here */}
 
                             {lobby.status === 'in-progress' && lobby.players.find(p => p.id === user?.id)?.role === 'developer' ? (
                                 <TaskSidebar
@@ -263,48 +282,29 @@ export default function LobbyPage() {
                                 />
                             ) : (
                                 /* Game Settings (Lobby Mode) */
-                                <div className="bg-gray-900/30 p-6 rounded-xl border border-gray-800">
-                                    <h2 className="text-sm font-bold text-gray-400 mb-4 tracking-wider">GAME SETTINGS</h2>
-                                    <div className="space-y-3 text-sm">
-                                        <div className="flex justify-between items-center p-2 rounded hover:bg-white/5 transition-colors">
-                                            <span className="text-gray-500">Imposters</span>
-                                            <span className="font-mono text-red-400 font-bold bg-red-400/10 px-2 py-0.5 rounded">{lobby.settings.imposterCount}</span>
+                                <div className="h-full flex flex-col">
+                                    <h2 className="font-pixel text-sm text-[#2C3A47] mb-6 border-b-4 border-[#2C3A47] pb-2">SETTINGS</h2>
+                                    <div className="space-y-4 font-pixel text-[10px] text-[#2C3A47] flex-1">
+                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2">
+                                            <span>IMPOSTORS:</span>
+                                            <span className="text-[#a55eea]">{lobby.settings.imposterCount}</span>
                                         </div>
-                                        <div className="flex justify-between items-center p-2 rounded hover:bg-white/5 transition-colors">
-                                            <span className="text-gray-500">Tasks</span>
-                                            <span className="font-mono text-blue-400 font-bold bg-blue-400/10 px-2 py-0.5 rounded">{lobby.settings.taskCount}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center p-2 rounded hover:bg-white/5 transition-colors">
-                                            <span className="text-gray-500">Discussion</span>
-                                            <span className="font-mono text-purple-400 font-bold bg-purple-400/10 px-2 py-0.5 rounded">{lobby.settings.discussionTime}s</span>
+                                        <div className="flex justify-between border-b-2 border-[#84817a] border-dashed pb-2">
+                                            <span>TASKS:</span>
+                                            <span className="text-[#4b7bec]">{lobby.settings.taskCount}</span>
                                         </div>
                                     </div>
 
                                     {lobby.hostId === user?.id ? (
                                         <button
                                             onClick={() => socketService.startGame(code)}
-                                            className="w-full mt-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg font-bold text-white transition-all shadow-lg shadow-green-900/20 active:scale-[0.98]"
+                                            className="w-full mt-auto py-4 bg-[#44BD32] hover:bg-[#4cd137] border-4 border-[#278f1e] text-white font-pixel text-xs shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all"
                                         >
                                             START GAME
                                         </button>
                                     ) : (
-                                        <div className="w-full mt-6 py-3 text-center text-gray-500 text-sm italic bg-white/5 rounded-lg border border-white/5">
-                                            Waiting for host to start...
-                                        </div>
-                                    )}
-
-                                    {/* Game Info (Role Reveal) */}
-                                    {lobby.status === 'in-progress' && (
-                                        <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg animate-pulse">
-                                            <h3 className="text-center text-lg font-bold text-blue-300 mb-2">GAME STARTED</h3>
-                                            {lobby.players.find(p => p.id === user?.id)?.role && (
-                                                <div className="text-center">
-                                                    <p className="text-sm text-gray-400">Your Role</p>
-                                                    <p className={`text-2xl font-black tracking-widest ${lobby.players.find(p => p.id === user?.id)?.role === 'hacker' ? 'text-red-500' : 'text-green-500'}`}>
-                                                        {lobby.players.find(p => p.id === user?.id)?.role?.toUpperCase()}
-                                                    </p>
-                                                </div>
-                                            )}
+                                        <div className="w-full mt-auto py-4 text-center bg-[#d1ccc0] border-2 border-[#84817a] text-[#2C3A47] font-pixel text-[10px]">
+                                            WAITING FOR HOST...
                                         </div>
                                     )}
                                 </div>
@@ -333,11 +333,9 @@ export default function LobbyPage() {
                             lobby={lobby}
                             currentUser={lobby.players.find(p => p.id === user?.id)}
                             onReturnToLobby={() => {
-                                // Only host can truly reset (or we can allow anyone to trigger it for now locally? No, server state)
                                 if (lobby.hostId === user?.id) {
                                     socketService.socket?.emit('lobby:reset', code);
                                 } else {
-                                    // Non-host just waits or we can optimistically show something
                                     alert('Waiting for host to restart...');
                                 }
                             }}
