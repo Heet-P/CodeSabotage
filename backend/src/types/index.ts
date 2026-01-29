@@ -33,6 +33,13 @@ export interface GameSettings {
     votingTime: number;
 }
 
+export interface SabotageStatus {
+    isActive: boolean;
+    type: 'meltdown' | null;
+    endTime: number | null;
+    tasks: { [playerId: string]: { taskId: string; completed: boolean } };
+}
+
 export interface Lobby {
     id: string; // 6-character code
     hostId: string;
@@ -43,6 +50,7 @@ export interface Lobby {
     taskProgress?: number;
     winner?: 'developers' | 'hackers';
     winReason?: string;
+    sabotage?: SabotageStatus;
 }
 
 // Socket Events

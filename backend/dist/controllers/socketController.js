@@ -1,51 +1,46 @@
-import { Server, Socket } from 'socket.io';
-import { LobbyManager } from '../services/lobbyService';
-import { GameService } from '../services/gameService';
-
-const lobbyManager = LobbyManager.getInstance();
-const gameService = new GameService();
-
-const meltdownTimers = new Map<string, NodeJS.Timeout>();
-
-export const setupSocketHandlers = (io: Server) => {
-    io.on('connection', (socket: Socket) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.setupSocketHandlers = void 0;
+const lobbyService_1 = require("../services/lobbyService");
+const gameService_1 = require("../services/gameService");
+const lobbyManager = lobbyService_1.LobbyManager.getInstance();
+const gameService = new gameService_1.GameService();
+const meltdownTimers = new Map();
+const setupSocketHandlers = (io) => {
+    io.on('connection', (socket) => {
         console.log('User connected:', socket.id);
-
-        socket.on('lobby:join', (lobbyId: string) => {
+        socket.on('lobby:join', (lobbyId) => {
             const lobby = lobbyManager.getLobby(lobbyId);
             if (lobby) {
                 socket.join(lobbyId);
                 io.to(lobbyId).emit('lobby:updated', lobby);
             }
         });
-
-        socket.on('game:start', (lobbyId: string) => {
+        socket.on('game:start', (lobbyId) => {
             try {
                 console.log('Starting game for lobby:', lobbyId);
                 const lobby = gameService.startGame(lobbyId);
                 io.to(lobbyId).emit('lobby:updated', lobby);
                 io.to(lobbyId).emit('game:started', lobby);
-            } catch (e: any) {
+            }
+            catch (e) {
                 console.error('Error starting game:', e);
                 socket.emit('error', e.message);
             }
         });
-
-        socket.on('task:verify', ({ lobbyId, playerId, taskId, code }: { lobbyId: string, playerId: string, taskId: string, code: string }) => {
+        socket.on('task:verify', ({ lobbyId, playerId, taskId, code }) => {
             try {
                 const result = gameService.verifyTask(lobbyId, playerId, taskId, code);
                 if (result.success) {
                     const lobby = lobbyManager.getLobby(lobbyId);
                     io.to(lobbyId).emit('lobby:updated', lobby);
                     socket.emit('task:success', taskId);
-
                     // Check if Sabotage was just resolved
                     if (lobby && !lobby.sabotage?.isActive && meltdownTimers.has(lobbyId)) {
                         console.log('Meltdown averted!');
                         clearTimeout(meltdownTimers.get(lobbyId));
                         meltdownTimers.delete(lobbyId);
                     }
-
                     if (lobby && lobby.status === 'ended') {
                         io.to(lobbyId).emit('game:ended', lobby);
                         // Also clear timer if ended
@@ -54,25 +49,24 @@ export const setupSocketHandlers = (io: Server) => {
                             meltdownTimers.delete(lobbyId);
                         }
                     }
-                } else {
+                }
+                else {
                     socket.emit('task:error', result.message);
                 }
-            } catch (error: any) {
+            }
+            catch (error) {
                 socket.emit('error', error.message);
             }
         });
-
-        socket.on('sabotage:trigger', ({ lobbyId, playerId, abilityId }: { lobbyId: string, playerId: string, abilityId: string }) => {
+        socket.on('sabotage:trigger', ({ lobbyId, playerId, abilityId }) => {
             console.log(`Sabotage triggered: ${abilityId} by ${playerId} in ${lobbyId}`);
-
             if (abilityId === 'meltdown') {
                 try {
                     const lobby = gameService.triggerSabotage(lobbyId, 'meltdown');
                     io.to(lobbyId).emit('lobby:updated', lobby);
-
                     // Start Timer
-                    if (meltdownTimers.has(lobbyId)) clearTimeout(meltdownTimers.get(lobbyId));
-
+                    if (meltdownTimers.has(lobbyId))
+                        clearTimeout(meltdownTimers.get(lobbyId));
                     const timer = setTimeout(() => {
                         const updatedLobby = gameService.checkSabotageTimeout(lobbyId);
                         if (updatedLobby) {
@@ -81,49 +75,48 @@ export const setupSocketHandlers = (io: Server) => {
                         }
                         meltdownTimers.delete(lobbyId);
                     }, 45000); // 45 Seconds
-
                     meltdownTimers.set(lobbyId, timer);
                     return;
-                } catch (e: any) {
+                }
+                catch (e) {
                     socket.emit('error', e.message);
                     return;
                 }
             }
-
             // Other Sabotage (Mocks)
             let duration = 0;
-            if (abilityId === 'freeze') duration = 10;
-            if (abilityId === 'bug') duration = 0; // Immediate effect
-            if (abilityId === 'swap') duration = 15;
-
+            if (abilityId === 'freeze')
+                duration = 10;
+            if (abilityId === 'bug')
+                duration = 0; // Immediate effect
+            if (abilityId === 'swap')
+                duration = 15;
             // Broadcast to everyone in lobby (Developers will handle the effect)
             io.to(lobbyId).emit('sabotage:effect', { abilityId, duration });
         });
-
-        socket.on('meeting:start', (lobbyId: string) => {
+        socket.on('meeting:start', (lobbyId) => {
             console.log('Meeting triggered in lobby:', lobbyId);
             try {
                 const lobby = gameService.startMeeting(lobbyId);
                 io.to(lobbyId).emit('lobby:updated', lobby);
                 io.to(lobbyId).emit('meeting:started', lobby);
-            } catch (e: any) {
+            }
+            catch (e) {
                 console.error(e);
             }
         });
-
-        socket.on('lobby:reset', (lobbyId: string) => {
+        socket.on('lobby:reset', (lobbyId) => {
             try {
                 const lobby = gameService.resetLobby(lobbyId);
                 io.to(lobbyId).emit('lobby:updated', lobby);
-            } catch (e: any) {
+            }
+            catch (e) {
                 console.error(e);
             }
         });
-
-        socket.on('vote:cast', ({ lobbyId, playerId, targetId }: { lobbyId: string, playerId: string, targetId: string | 'skip' }) => {
+        socket.on('vote:cast', ({ lobbyId, playerId, targetId }) => {
             console.log(`Vote cast by ${playerId} for ${targetId}`);
             const result = gameService.castVote(lobbyId, playerId, targetId);
-
             if (result.success && result.lobby) {
                 io.to(lobbyId).emit('lobby:updated', result.lobby);
                 if (result.message) {
@@ -131,10 +124,10 @@ export const setupSocketHandlers = (io: Server) => {
                 }
             }
         });
-
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
             // Handle player disconnect/cleanup if needed
         });
     });
 };
+exports.setupSocketHandlers = setupSocketHandlers;

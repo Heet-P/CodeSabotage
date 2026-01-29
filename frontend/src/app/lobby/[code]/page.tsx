@@ -16,6 +16,7 @@ import GameOverScreen from '@/components/game/GameOverScreen';
 import TaskCompletionConfetti from '@/components/ui/TaskCompletionConfetti';
 import PageTransition from '@/components/ui/PageTransition';
 import RoleReveal from '@/components/game/RoleReveal';
+import MeltdownOverlay from '@/components/game/MeltdownOverlay';
 
 export default function LobbyPage() {
     const params = useParams();
@@ -326,6 +327,20 @@ export default function LobbyPage() {
                             }}
                         />
                     )}
+
+                    {/* Meltdown Overlay */}
+                    <MeltdownOverlay
+                        lobby={lobby}
+                        currentUser={lobby.players.find(p => p.id === user?.id)}
+                        onVerify={(taskId: string, codeContent: string) => {
+                            socketService.socket?.emit('task:verify', {
+                                lobbyId: code,
+                                playerId: user?.id || '',
+                                taskId,
+                                code: codeContent
+                            });
+                        }}
+                    />
 
                     {/* Game Over Screen */}
                     {lobby.status === 'ended' && (
