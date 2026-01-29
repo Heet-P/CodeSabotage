@@ -63,107 +63,113 @@ export default function DashboardPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-950 text-white p-8 bg-[url('/grid.svg')] bg-cover bg-center">
-                <div className="absolute inset-0 bg-gray-950/90" />
+            <div className="min-h-screen bg-[#70C5CE] font-mono flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                {/* Pixel Font Import */}
+                <style jsx global>{`
+                    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+                    .font-pixel { font-family: 'Press Start 2P', cursive; }
+                `}</style>
 
-                <div className="relative z-10 max-w-4xl mx-auto">
-                    <header className="flex justify-between items-center mb-12">
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                            Dashboard
-                        </h1>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                {isEditingProfile ? (
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            value={newUsername}
-                                            onChange={(e) => setNewUsername(e.target.value)}
-                                            className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white outline-none focus:border-blue-500"
-                                            placeholder="New Username"
-                                            autoFocus
-                                        />
-                                        <button onClick={handleUpdateProfile} disabled={loading} className="text-green-400 hover:text-green-300">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                        </button>
-                                        <button onClick={() => setIsEditingProfile(false)} className="text-red-400 hover:text-red-300">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="group flex items-center gap-2 cursor-pointer" onClick={() => {
-                                        setNewUsername(user?.user_metadata.username || '');
-                                        setIsEditingProfile(true);
-                                    }}>
-                                        <p className="font-medium text-white group-hover:text-blue-400 transition-colors">{user?.user_metadata.username || 'Developer'}</p>
-                                        <svg className="w-3 h-3 text-gray-500 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                    </div>
-                                )}
-                                <p className="text-xs text-gray-500">{user?.email}</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center font-bold text-lg">
-                                {(user?.user_metadata.username?.[0] || user?.email?.[0] || 'U').toUpperCase()}
-                            </div>
-                        </div>
-                    </header>
+                {/* Clouds (CSS Art or simple divs) */}
+                <div className="absolute top-10 left-10 text-white/80 animate-pulse text-6xl">☁</div>
+                <div className="absolute top-20 right-20 text-white/60 animate-bounce text-5xl delay-1000">☁</div>
+                <div className="absolute top-40 left-1/4 text-white/70 text-4xl delay-500">☁</div>
 
-                    {error && (
-                        <div className="mb-8 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
-                            Error: {error}
-                        </div>
-                    )}
+                {/* Header / Title */}
+                <div className="text-center mb-12 relative z-10">
+                    <h1 className="font-pixel text-4xl md:text-6xl text-[#F0932B] drop-shadow-[4px_4px_0_#A9561E] mb-4 leading-tight tracking-widest">
+                        CODE<br />MAFIA
+                    </h1>
+                    <p className="font-pixel text-xs md:text-sm text-[#1e272e] tracking-widest mt-4">Sabotage or Survive</p>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* Create Lobby Card */}
-                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
-                            <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                            </div>
-                            <h2 className="text-2xl font-bold mb-4">Create New Lobby</h2>
-                            <p className="text-gray-400 mb-8">
-                                Start a new game session and invite other developers to join. You'll be the host.
-                            </p>
-                            <button
-                                onClick={handleCreateLobby}
-                                disabled={loading}
-                                className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors disabled:opacity-50"
-                            >
-                                {loading ? 'Creating...' : 'Create Lobby'}
-                            </button>
-                        </div>
-
-                        {/* Join Lobby Card */}
-                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all group">
-                            <div className="h-12 w-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                </svg>
-                            </div>
-                            <h2 className="text-2xl font-bold mb-4">Join Existing Lobby</h2>
-                            <p className="text-gray-400 mb-8">
-                                Enter a 6-character game code to join an active session.
-                            </p>
-                            <form onSubmit={handleJoinLobby} className="space-y-4">
+                    {/* User Profile (Pixel Style) */}
+                    <div className="mt-8 flex items-center justify-center gap-2">
+                        {isEditingProfile ? (
+                            <div className="flex items-center gap-2 bg-white border-2 border-black p-1 shadow-[4px_4px_0_rgba(0,0,0,0.2)]">
                                 <input
-                                    type="text"
-                                    value={joinCode}
-                                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                    placeholder="ENTER CODE"
-                                    maxLength={6}
-                                    className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-center text-2xl font-mono tracking-widest uppercase focus:ring-2 focus:ring-purple-500 outline-none"
+                                    value={newUsername}
+                                    onChange={(e) => setNewUsername(e.target.value)}
+                                    className="bg-transparent border-none text-black text-xs font-pixel outline-none w-32"
+                                    placeholder="USERNAME"
+                                    autoFocus
                                 />
-                                <button
-                                    type="submit"
-                                    disabled={loading || joinCode.length !== 6}
-                                    className="w-full py-3 px-6 bg-purple-600 hover:bg-purple-500 rounded-lg font-semibold transition-colors disabled:opacity-50"
-                                >
-                                    {loading ? 'Joining...' : 'Join Game'}
-                                </button>
-                            </form>
-                        </div>
+                                <button onClick={handleUpdateProfile} className="text-green-600 hover:text-green-500 font-pixel text-[10px]">SAVE</button>
+                                <button onClick={() => setIsEditingProfile(false)} className="text-red-600 hover:text-red-500 font-pixel text-[10px]">X</button>
+                            </div>
+                        ) : (
+                            <div
+                                className="group flex items-center gap-3 cursor-pointer bg-white/20 hover:bg-white/40 px-4 py-2 rounded border-2 border-transparent hover:border-black/20 transition-all"
+                                onClick={() => {
+                                    setNewUsername(user?.user_metadata.username || '');
+                                    setIsEditingProfile(true);
+                                }}
+                            >
+                                <div className="w-8 h-8 bg-[#F0932B] border-2 border-black shadow-[2px_2px_0_rgba(0,0,0,0.2)] flex items-center justify-center font-pixel text-white text-xs">
+                                    {(user?.user_metadata.username?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                                </div>
+                                <div className="text-left">
+                                    <p className="font-pixel text-[10px] text-[#1e272e]">{user?.user_metadata.username || 'DEVELOPER'}</p>
+                                    <p className="font-pixel text-[8px] text-[#1e272e]/60 hidden md:block">EDIT PROFILE</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {error && (
+                    <div className="mb-6 bg-red-500 border-4 border-red-800 text-white font-pixel text-xs p-4 shadow-[4px_4px_0_rgba(0,0,0,0.5)] max-w-md w-full text-center">
+                        ERROR: {error}
+                    </div>
+                )}
+
+                {/* Controls Container */}
+                <div className="flex flex-col gap-6 w-full max-w-md z-10">
+
+                    {/* Create Game Button */}
+                    <button
+                        onClick={handleCreateLobby}
+                        disabled={loading}
+                        className="w-full bg-[#F0932B] hover:bg-[#ff9f43] text-white font-pixel py-6 text-sm md:text-lg border-4 border-[#A9561E] shadow-[0_6px_0_#894519] active:shadow-[0_2px_0_#894519] active:translate-y-1 transition-all"
+                    >
+                        {loading ? 'LOADING...' : 'CREATE GAME'}
+                    </button>
+
+                    {/* Join Game Card */}
+                    <div className="bg-[#F7F1E3] border-4 border-[#84817a] p-6 shadow-[8px_8px_0_rgba(0,0,0,0.2)] relative">
+                        {/* Decorative 'tape' or corner */}
+                        <div className="absolute -top-2 -left-2 w-4 h-4 bg-[#84817a]"></div>
+                        <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#84817a]"></div>
+                        <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-[#84817a]"></div>
+                        <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-[#84817a]"></div>
+
+                        <p className="font-pixel text-xs text-[#2C3A47] mb-4 text-center">Or join a game...</p>
+
+                        <form onSubmit={handleJoinLobby} className="flex gap-2">
+                            <input
+                                type="text"
+                                value={joinCode}
+                                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                placeholder="LOBBY ID"
+                                maxLength={6}
+                                className="flex-1 bg-[#d1ccc0] border-2 border-[#84817a] p-3 font-pixel text-xs text-[#2C3A47] placeholder-[#2C3A47]/50 outline-none focus:bg-white transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                disabled={loading || joinCode.length !== 6}
+                                className="bg-[#44BD32] hover:bg-[#4cd137] text-white font-pixel text-xs px-6 border-2 border-[#278f1e] shadow-[0_4px_0_#207319] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:active:translate-y-0 disabled:active:shadow-[0_4px_0_#207319]"
+                            >
+                                JOIN
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div className="mt-12 text-center font-pixel text-[10px] text-[#1e272e]/50">
+                    3-5 PLAYERS • FIND THE IMPOSTOR
+                </div>
+
+                {/* Grass at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-[#44BD32] border-t-4 border-[#278f1e]"></div>
             </div>
         </ProtectedRoute>
     );
