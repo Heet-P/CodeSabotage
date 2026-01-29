@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface RoleRevealProps {
@@ -10,6 +10,12 @@ interface RoleRevealProps {
 
 export default function RoleReveal({ role, onComplete }: RoleRevealProps) {
     const [stage, setStage] = useState<'assigning' | 'reveal'>('assigning');
+
+    const onCompleteRef = useRef(onComplete);
+
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     useEffect(() => {
         // Timeline:
@@ -22,14 +28,14 @@ export default function RoleReveal({ role, onComplete }: RoleRevealProps) {
         }, 2000);
 
         const completeTimer = setTimeout(() => {
-            onComplete();
+            onCompleteRef.current();
         }, 5000);
 
         return () => {
             clearTimeout(revealTimer);
             clearTimeout(completeTimer);
         };
-    }, [onComplete]);
+    }, []);
 
     return (
         <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center font-mono">
