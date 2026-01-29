@@ -78,7 +78,7 @@ export default function DashboardPage() {
                 {/* Header / Title */}
                 <div className="text-center mb-12 relative z-10">
                     <h1 className="font-pixel text-4xl md:text-6xl text-[#F0932B] drop-shadow-[4px_4px_0_#A9561E] mb-4 leading-tight tracking-widest">
-                        CODE<br />MAFIA
+                        CODE<br />SABOTAGE
                     </h1>
                     <p className="font-pixel text-xs md:text-sm text-[#1e272e] tracking-widest mt-4">Sabotage or Survive</p>
 
