@@ -33,37 +33,37 @@ export default function LoginForm() {
     };
 
     return (
-        <div className="w-full max-w-md p-8 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-            <h2 className="text-3xl font-bold text-center text-white mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                Welcome Back
+        <div className="w-full max-w-md p-8 retro-panel animate-fade-in-up">
+            <h2 className="text-xl md:text-2xl font-pixel text-center text-[#2C3A47] mb-8 border-b-4 border-[#2C3A47] pb-4 tracking-tight">
+                WELCOME BACK
             </h2>
 
             {error && (
-                <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
-                    {error}
+                <div className="mb-6 p-4 bg-[#eb4d4b] border-4 border-[#c0392b] text-white font-pixel text-[10px] shadow-[4px_4px_0_rgba(0,0,0,0.2)]">
+                    ERROR: {error}
                 </div>
             )}
 
             <form onSubmit={handleLogin} className="space-y-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                    <label className="block font-pixel text-[10px] text-[#2C3A47] mb-2">EMAIL</label>
                     <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 bg-white border-4 border-[#2C3A47] outline-none font-mono text-[#2C3A47] placeholder-gray-400 focus:shadow-[4px_4px_0_rgba(0,0,0,0.2)] transition-all"
                         placeholder="dev@codesabotage.com"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                    <label className="block font-pixel text-[10px] text-[#2C3A47] mb-2">PASSWORD</label>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 bg-white border-4 border-[#2C3A47] outline-none font-mono text-[#2C3A47] placeholder-gray-400 focus:shadow-[4px_4px_0_rgba(0,0,0,0.2)] transition-all"
                         placeholder="••••••••"
                         required
                     />
@@ -72,16 +72,16 @@ export default function LoginForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg transform transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-4 px-4 bg-[#44BD32] hover:bg-[#4cd137] text-white font-pixel text-xs border-4 border-[#278f1e] shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {loading ? 'Authenticating...' : 'Sign In'}
+                    {loading ? 'AUTHENTICATING...' : 'SIGN IN'}
                 </button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-gray-400">
-                Don&apos;t have an account?{' '}
-                <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
-                    Sign up
+            <div className="mt-8 text-center bg-[#d1ccc0] border-2 border-[#84817a] p-3">
+                <p className="font-pixel text-[8px] text-[#2C3A47] mb-2">NEW PLAYER?</p>
+                <Link href="/register" className="text-[#a55eea] hover:text-[#9c4be6] font-pixel text-[10px] underline decoration-2 underline-offset-4">
+                    CREATE CHARACTER
                 </Link>
             </div>
         </div>

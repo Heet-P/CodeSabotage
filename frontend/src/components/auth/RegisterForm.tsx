@@ -48,49 +48,49 @@ export default function RegisterForm() {
     };
 
     return (
-        <div className="w-full max-w-md p-8 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-            <h2 className="text-3xl font-bold text-center text-white mb-6 bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
-                Join the Sabotage
+        <div className="w-full max-w-md p-8 retro-panel animate-fade-in-up">
+            <h2 className="text-xl md:text-2xl font-pixel text-center text-[#2C3A47] mb-8 border-b-4 border-[#2C3A47] pb-4 tracking-tight">
+                JOIN THE SABOTAGE
             </h2>
 
             {error && (
-                <div className={`mb-4 p-3 rounded-lg text-sm ${error.includes('successful') ? 'bg-green-500/20 border border-green-500/50 text-green-200' : 'bg-red-500/20 border border-red-500/50 text-red-200'}`}>
+                <div className={`mb-6 p-4 border-4 font-pixel text-[10px] shadow-[4px_4px_0_rgba(0,0,0,0.2)] ${error.includes('successful') ? 'bg-[#44BD32] border-[#278f1e] text-white' : 'bg-[#eb4d4b] border-[#c0392b] text-white'}`}>
                     {error}
                 </div>
             )}
 
             <form onSubmit={handleRegister} className="space-y-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Username</label>
+                    <label className="block font-pixel text-[10px] text-[#2C3A47] mb-2">USERNAME / CODENAME</label>
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 bg-white border-4 border-[#2C3A47] outline-none font-mono text-[#2C3A47] placeholder-gray-400 focus:shadow-[4px_4px_0_rgba(0,0,0,0.2)] transition-all"
                         placeholder="CodeNinja"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                    <label className="block font-pixel text-[10px] text-[#2C3A47] mb-2">EMAIL</label>
                     <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 bg-white border-4 border-[#2C3A47] outline-none font-mono text-[#2C3A47] placeholder-gray-400 focus:shadow-[4px_4px_0_rgba(0,0,0,0.2)] transition-all"
                         placeholder="dev@codesabotage.com"
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                    <label className="block font-pixel text-[10px] text-[#2C3A47] mb-2">PASSWORD</label>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all"
+                        className="w-full px-4 py-3 bg-white border-4 border-[#2C3A47] outline-none font-mono text-[#2C3A47] placeholder-gray-400 focus:shadow-[4px_4px_0_rgba(0,0,0,0.2)] transition-all"
                         placeholder="••••••••"
                         required
                         minLength={6}
@@ -100,16 +100,16 @@ export default function RegisterForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-semibold rounded-lg shadow-lg transform transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-4 px-4 bg-[#F0932B] hover:bg-[#ffbe76] text-white font-pixel text-xs border-4 border-[#A9561E] shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {loading ? 'Creating Account...' : 'Sign Up'}
+                    {loading ? 'INITIALIZING...' : 'SIGN UP'}
                 </button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-gray-400">
-                Already have an account?{' '}
-                <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-                    Sign in
+            <div className="mt-8 text-center bg-[#d1ccc0] border-2 border-[#84817a] p-3">
+                <p className="font-pixel text-[8px] text-[#2C3A47] mb-2">ALREADY AN AGENT?</p>
+                <Link href="/login" className="text-[#a55eea] hover:text-[#9c4be6] font-pixel text-[10px] underline decoration-2 underline-offset-4">
+                    SIGN IN
                 </Link>
             </div>
         </div>
