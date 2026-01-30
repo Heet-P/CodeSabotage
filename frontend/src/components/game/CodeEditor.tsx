@@ -7,11 +7,12 @@ import { WebsocketProvider } from 'y-websocket';
 import { useAuth } from '@/context/AuthContext';
 
 interface CodeEditorProps {
-    lobbyId: string;
+    roomName: string; // Changed from lobbyId to generic roomName
+    initialCode?: string; // Code to populate if room is empty
     onMount?: (editor: any, monaco: any) => void;
 }
 
-export default function CodeEditor({ lobbyId, onMount }: CodeEditorProps) {
+export default function CodeEditor({ roomName, initialCode, onMount }: CodeEditorProps) {
     const { user } = useAuth();
     const editorRef = useRef<any>(null);
     const [provider, setProvider] = useState<WebsocketProvider | null>(null);
@@ -21,15 +22,18 @@ export default function CodeEditor({ lobbyId, onMount }: CodeEditorProps) {
         editorRef.current = editor;
         if (onMount) onMount(editor, monaco);
 
-        // Dynamic import to avoid SSR 'window is not defined' error
+        // Dynamic import
         const { MonacoBinding } = await import('y-monaco');
+
+        // Clean up previous provider if any (though useEffect handles this usually, safe to ensure)
+        if (provider) provider.destroy();
 
         // Initialize Yjs
         const doc = new Y.Doc();
         const wsUrl = process.env.NEXT_PUBLIC_YJS_WS_URL || 'ws://localhost:1234';
         const wsProvider = new WebsocketProvider(
             wsUrl,
-            lobbyId, // Room name
+            roomName,
             doc
         );
 
@@ -37,11 +41,21 @@ export default function CodeEditor({ lobbyId, onMount }: CodeEditorProps) {
             setConnected(event.status === 'connected');
         });
 
+        // Wait for connection/sync to determine if we need to inject initialCode
+        wsProvider.on('sync', (isSynced: boolean) => {
+            if (isSynced && initialCode) {
+                const monacoText = doc.getText('monaco');
+                if (monacoText.length === 0) {
+                    // Room is new/empty, inject boilerplate
+                    monacoText.insert(0, initialCode);
+                }
+            }
+        });
+
         setProvider(wsProvider);
 
         const type = doc.getText('monaco');
 
-        // Bind Yjs to Monaco
         const binding = new MonacoBinding(
             type,
             editor.getModel()!,

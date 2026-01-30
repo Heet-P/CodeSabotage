@@ -235,12 +235,30 @@ export default function LobbyPage() {
                             </div>
 
                             <div className="flex-1 relative overflow-hidden">
-                                <CodeEditor
-                                    lobbyId={code}
-                                    onMount={(editor, monaco) => {
-                                        editorRef.current = editor;
-                                    }}
-                                />
+                                {(() => {
+                                    // Find active task (first incomplete or manually selected)
+                                    // We need state for 'selectedTaskId'
+                                    const myPlayer = lobby.players.find(p => p.id === user?.id);
+
+                                    // Default to first incomplete task if no selection
+                                    // We need to add state for this. For now let's derive it.
+                                    // We'll wrap this in a component or hook if complex, but inline is fine for MVP fix.
+                                    const activeTask = myPlayer?.tasks?.find(t => !t.completed); // Simple: auto-select first todo
+
+                                    // Unique Room Name: Lobby + User + Task
+                                    // This ensures per-task isolation.
+                                    const roomName = activeTask && user ? `${code}-${user.id}-${activeTask.id}` : `${code}-lobby`;
+
+                                    return (
+                                        <CodeEditor
+                                            roomName={roomName}
+                                            initialCode={activeTask?.codeSnippet}
+                                            onMount={(editor, monaco) => {
+                                                editorRef.current = editor;
+                                            }}
+                                        />
+                                    );
+                                })()}
                             </div>
 
                             {/* Emergency Button Positioned Absolute or Static at bottom */}
