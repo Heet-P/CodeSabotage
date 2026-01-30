@@ -70,7 +70,7 @@ export default function Home() {
       </div>
 
       <footer className="absolute bottom-4 text-[#2C3A47] text-[10px] font-pixel opacity-60">
-        &copy; 2026 CODE SABOTAGE // v1.0.0
+        &copy; 2026 CODE SABOTAGE // v1.0.0 // Heet Parikh
       </footer>
     </div>
   );
