@@ -165,7 +165,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mt-12 text-center font-pixel text-[10px] text-[#1e272e]/50">
-                    3-5 PLAYERS • FIND THE IMPOSTOR
+                    3-10 PLAYERS • FIND THE HACKER
                 </div>
 
                 {/* Grass at bottom */}
