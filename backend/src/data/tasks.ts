@@ -1,254 +1,169 @@
 import { Task } from '../types';
 
-export const COMPLEX_TASKS: Task[] = [
-    {
-        id: 'task-api-ratelimit',
-        title: 'API Rate Limiter',
-        description: 'Implement the `isAllowed(userId)` method in the RateLimiter class. It should allow max 5 requests per 10 seconds per user.',
-        difficulty: 'hard',
-        completed: false,
-        codeSnippet: `
+export const INITIAL_CODEBASE = `
 /**
- * API Rate Limiter Module
+ * SYSTEM CONTROLLER v2.0
  * 
- * Objectives:
- * 1. Implement the Token Bucket or Sliding Window algorithm.
- * 2. Ensure thread-safety (mocked via sync methods).
- * 3. Expire old requests to prevent memory leaks.
+ * This class controls the core logic of the ship's mainframe.
+ * distinct modules handle Data, Power, and security.
+ * 
+ * your job is to fix the BUGs in the system.
  */
 
-class Logger {
-    log(msg) { console.log(\`[SYSTEM] \${msg}\`); }
-    warn(msg) { console.warn(\`[WARN] \${msg}\`); }
-}
-
-class Database {
-    constructor() {
-        this.store = new Map();
-    }
-    
-    get(key) { return this.store.get(key); }
-    set(key, val) { this.store.set(key, val); }
-}
-
-class RequestConfig {
-    constructor() {
-        this.maxRequests = 5;
-        this.windowSizeMs = 10000; // 10 seconds
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.next = null;
     }
 }
 
-class RateLimiter {
+class SystemController {
     constructor() {
-        this.db = new Database();
-        this.config = new RequestConfig();
-        this.logger = new Logger();
-        this.logger.log('Rate Limiter Initialized');
+        this.storage = [];
+        this.queue = [];
+        this.users = [
+            { id: 1, name: 'Admin' },
+            { id: 4, name: 'Engineer' },
+            { id: 7, name: 'Navigator' },
+            { id: 12, name: 'Pilot' }
+        ]; // Sorted by ID
     }
 
     /**
-     * Determines if a user is allowed to make a request.
-     * @param {string} userId - The unique ID of the user.
-     * @returns {boolean} - true if allowed, false if blocked.
+     * TASK 1: Stack Management
+     * Add an item to the top of the stack (this.storage).
      */
-    isAllowed(userId) {
-        // --- YOUR CODE STARTS HERE ---
-        // TODO: Implement rate limiting logic
-        // Hint: Use Date.now() to track timestamps
+    stackPush(item) {
+        if (!item) return false;
+        // TODO: Something is missing here!
         
-        return true; 
-        // --- YOUR CODE ENDS HERE ---
+        return true;
+    }
+
+    stackPop() {
+        if (this.storage.length === 0) return null;
+        return this.storage.pop();
     }
 
     /**
-     * Clear all records (Admin only)
+     * TASK 2: Queue Management
+     * Remove the first item from the queue and return it.
      */
-    reset() {
-        this.db = new Database();
-        this.logger.log('Database reset');
-    }
-}
-
-// Test Suite (Do not modify)
-const limiter = new RateLimiter();
-function test() {
-    console.log('Testing User A...');
-    let allowedCount = 0;
-    for(let i=0; i<7; i++) {
-        if(limiter.isAllowed('user_A')) allowedCount++;
-    }
-    return allowedCount; 
-}
-`,
-    },
-    {
-        id: 'task-order-processing',
-        title: 'E-Commerce Order Processor',
-        description: 'Implement `processOrder(order)` to validate inventory and process payment. Throw errors for invalid states.',
-        difficulty: 'hard',
-        completed: false,
-        codeSnippet: `
-/**
- * Message Queue Order Processing System
- * 
- * Objectives:
- * 1. Validate Stock availability.
- * 2. Deduct Stock if valid.
- * 3. Process Payment via PaymentGateway.
- * 4. Return order receipt.
- */
-
-class Inventory {
-    constructor() {
-        this.stock = {
-            'item-101': 5,
-            'item-102': 0, // Out of stock
-            'item-103': 100
-        };
+    queueDequeue() {
+        if (this.queue.length === 0) return null;
+        // TODO: Remove and return the first element
+        // Hint: Array.prototype.shift()
+        
     }
 
-    hasStock(itemId, quantity) {
-        return (this.stock[itemId] || 0) >= quantity;
+    queueEnqueue(item) {
+        this.queue.push(item);
+        return true;
     }
 
-    deduct(itemId, quantity) {
-        if (!this.hasStock(itemId, quantity)) {
-            throw new Error('Insufficient Stock');
+    /**
+     * TASK 3: Binary Search
+     * Find a user by ID in the sorted this.users array.
+     * Returns the user object or null.
+     */
+    findUserById(targetId) {
+        let left = 0;
+        let right = this.users.length - 1;
+
+        while (left <= right) {
+            // TODO: Calculate the midpoint correctly
+            // let mid = ...
+            
+            if (this.users[mid].id === targetId) {
+                return this.users[mid];
+            }
+            if (this.users[mid].id < targetId) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
         }
-        this.stock[itemId] -= quantity;
-        console.log(\`Stock remaining for \${itemId}: \${this.stock[itemId]}\`);
-    }
-}
-
-class PaymentGateway {
-    process(userId, amount) {
-        if (amount < 0) throw new Error('Invalid Amount');
-        if (amount > 1000) throw new Error('Credit Limit Exceeded');
-        console.log(\`Processed payment of $\${amount} for \${userId}\`);
-        return 'TRANS_' + Math.floor(Math.random() * 10000);
-    }
-}
-
-class NotificationService {
-    sendEmail(userId, msg) {
-        console.log(\`Email to \${userId}: \${msg}\`);
-    }
-}
-
-class OrderProcessor {
-    constructor() {
-        this.inventory = new Inventory();
-        this.payment = new PaymentGateway();
-        this.notifier = new NotificationService();
+        return null;
     }
 
     /**
-     * Process an incoming order.
-     * @param {object} order - { id, userId, itemId, quantity, price }
-     * @returns {object} - { status: 'confirmed', transactionId: string }
-     * @throws {Error} if validation fails
+     * TASK 4: Recursion (Fibonacci)
+     * Calculate the Nth fibonacci number for energy regulation.
+     * 0, 1, 1, 2, 3, 5, 8...
      */
-    processOrder(order) {
-        // --- YOUR CODE STARTS HERE ---
-        // TODO: Validate stock, deduct stock, process payment.
+    calculateFibonacci(n) {
+        // TODO: Missing base case! Infinite loop risk.
+        // if (n <= 1) ...
         
-        return { status: 'confirmed', transactionId: 'MOCK' };
-        // --- YOUR CODE ENDS HERE ---
+        return this.calculateFibonacci(n - 1) + this.calculateFibonacci(n - 2);
     }
-}
 
-// System Test
-const processor = new OrderProcessor();
-function testOrder() {
-    try {
-        return processor.processOrder({ 
-            id: 'ord-1', 
-            userId: 'user-1', 
-            itemId: 'item-101', 
-            quantity: 1, 
-            price: 50 
-        });
-    } catch(e) {
-        return e.message;
+    /**
+     * TASK 5: Security (Valid Parentheses)
+     * Check if the security token (string of brackets) is valid.
+     * e.g. "()" valid, "(]" invalid
+     */
+    validateToken(token) {
+        const stack = [];
+        const map = {
+            '(': ')',
+            '[': ']',
+            '{': '}'
+        };
+
+        for (let char of token) {
+            if (map[char]) {
+                stack.push(map[char]);
+            } else {
+                // TODO: Check if stack is empty or mismatch
+                // if (stack.pop() !== char) return false;
+            }
+        }
+
+        return stack.length === 0;
     }
 }
-`,
+`;
+
+export const GAP_FILL_TASKS: Task[] = [
+    {
+        id: 'task-stack-push',
+        title: 'Fix System Storage',
+        description: 'The `stackPush` method is not saving data. Add the missing line to push items to `this.storage`.',
+        difficulty: 'easy',
+        completed: false,
+        codeSnippet: '', // Not used in Monolithic mode
     },
     {
-        id: 'task-auth-middleware',
-        title: 'JWT Auth Middleware',
-        description: 'Implement `verifyToken(token)` to decode a base64 mocked JWT, check expiration, and verify signature.',
+        id: 'task-queue-dequeue',
+        title: 'Fix Request Queue',
+        description: 'The `queueDequeue` method returns nothing. Implement logic to remove and return the first item.',
+        difficulty: 'easy',
+        completed: false,
+        codeSnippet: '',
+    },
+    {
+        id: 'task-binary-search',
+        title: 'Fix User Lookup',
+        description: '`findUserById` is crashing. Calculate the `mid` index correctly inside the while loop.',
+        difficulty: 'medium',
+        completed: false,
+        codeSnippet: '',
+    },
+    {
+        id: 'task-fibonacci',
+        title: 'Stabilize Energy Stream',
+        description: '`calculateFibonacci` causes a stack overflow. Add the missing base case for n <= 1.',
+        difficulty: 'medium',
+        completed: false,
+        codeSnippet: '',
+    },
+    {
+        id: 'task-validate-token',
+        title: 'Patch Security Protocol',
+        description: '`validateToken` accepts invalid keys. Add the logic to check `stack.pop()` against the current character.',
         difficulty: 'hard',
         completed: false,
-        codeSnippet: `
-/**
- * Authentication Middleware Layer
- * 
- * Objectives:
- * 1. Decode generic Header/Payload/Signature structure.
- * 2. Validate "exp" (expiration) claim.
- * 3. Verify signature matches hidden secret.
- */
-
-const SECRET_KEY = 'super-secret-key';
-
-class CryptoUtils {
-    static base64Decode(str) {
-        // Mock implementation for simulation
-        try {
-            return JSON.parse(atob(str));
-        } catch(e) { return {}; }
-    }
-    
-    static verifySignature(header, payload, signature) {
-        // Simple mock signature check
-        // In real world: HMACSHA256(header + "." + payload, secret)
-        const expected = header + payload + SECRET_KEY;
-        // We will assume simpler check for this game:
-        // Signature must contain the word 'verified'
-        return signature.includes('verified');
-    }
-}
-
-class AuthMiddleware {
-    constructor() {
-        this.allowAnonymous = false;
-    }
-
-    /**
-     * Verifies a Bearer token.
-     * Token format: "header.payload.signature" (Base64 encoded parts)
-     * @param {string} token 
-     * @returns {object} Decoded user payload if valid
-     * @throws {Error} If invalid or expired
-     */
-    verifyToken(token) {
-        // --- YOUR CODE STARTS HERE ---
-        // TODO: Split token, decode parts, check expiration, check signature.
-        
-        return { id: 1, username: 'admin' };
-        // --- YOUR CODE ENDS HERE ---
-    }
-}
-
-// Helpers
-function atob(str) {
-    // Node.js mock for atob if needed, or assume environment supports it.
-    // For this game environment, assume standard inputs.
-    if(str === 'eyJhbGciOiJIUzI1NiJ9') return '{"alg":"HS256"}';
-    if(str === 'eyJleHAiOjE5OTk5OTk5OTksInVzZXIiOiJhZG1pbiJ9') return '{"exp":1999999999,"user":"admin"}'; // Future
-    if(str === 'eyJleHAiOjEwMDAwMDAwMDAsInVzZXIiOiJvbGQifQ==') return '{"exp":1000000000,"user":"old"}'; // Past
-    return '{}';
-}
-
-const auth = new AuthMiddleware();
-function testAuth() {
-    try {
-        // Valid token (Mock)
-        const t = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE5OTk5OTk5OTksInVzZXIiOiJhZG1pbiJ9.verified_sig";
-        return auth.verifyToken(t);
-    } catch(e) { return e.message; }
-}
-`,
+        codeSnippet: '',
     }
 ];

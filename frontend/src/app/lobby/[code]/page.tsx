@@ -12,6 +12,7 @@ import ProgressBar from '@/components/game/ProgressBar';
 import SabotageMenu from '@/components/game/SabotageMenu';
 import MeetingModal from '@/components/game/MeetingModal';
 import GameOverScreen from '@/components/game/GameOverScreen';
+import { INITIAL_CODEBASE } from '@/data/initialCode';
 
 import TaskCompletionConfetti from '@/components/ui/TaskCompletionConfetti';
 import PageTransition from '@/components/ui/PageTransition';
@@ -236,24 +237,14 @@ export default function LobbyPage() {
 
                             <div className="flex-1 relative overflow-hidden">
                                 {(() => {
-                                    // Find active task (first incomplete or manually selected)
-                                    // We need state for 'selectedTaskId'
-                                    const myPlayer = lobby.players.find(p => p.id === user?.id);
-
-                                    // Default to first incomplete task if no selection
-                                    // We need to add state for this. For now let's derive it.
-                                    // We'll wrap this in a component or hook if complex, but inline is fine for MVP fix.
-                                    const activeTask = myPlayer?.tasks?.find(t => !t.completed); // Simple: auto-select first todo
-
-                                    // Unique Room Name: Lobby + User + Task
-                                    // This ensures per-task isolation.
-                                    const roomName = activeTask && user ? `${code}-${user.id}-${activeTask.id}` : `${code}-lobby`;
+                                    // Monolithic: Single Room per Player
+                                    const roomName = user ? `${code}-${user.id}-monolithic` : `${code}-lobby`;
 
                                     return (
                                         <CodeEditor
-                                            key={roomName}
+                                            key={roomName} // Remount if user/lobby changes
                                             roomName={roomName}
-                                            initialCode={activeTask?.codeSnippet}
+                                            initialCode={INITIAL_CODEBASE}
                                             onMount={(editor, monaco) => {
                                                 editorRef.current = editor;
                                             }}

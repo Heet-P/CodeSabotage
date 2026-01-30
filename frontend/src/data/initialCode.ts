@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GAP_FILL_TASKS = exports.INITIAL_CODEBASE = void 0;
-exports.INITIAL_CODEBASE = `
+export const INITIAL_CODEBASE = `
 /**
  * SYSTEM CONTROLLER v2.0
  * 
@@ -125,45 +122,3 @@ class SystemController {
     }
 }
 `;
-exports.GAP_FILL_TASKS = [
-    {
-        id: 'task-stack-push',
-        title: 'Fix System Storage',
-        description: 'The `stackPush` method is not saving data. Add the missing line to push items to `this.storage`.',
-        difficulty: 'easy',
-        completed: false,
-        codeSnippet: '', // Not used in Monolithic mode
-    },
-    {
-        id: 'task-queue-dequeue',
-        title: 'Fix Request Queue',
-        description: 'The `queueDequeue` method returns nothing. Implement logic to remove and return the first item.',
-        difficulty: 'easy',
-        completed: false,
-        codeSnippet: '',
-    },
-    {
-        id: 'task-binary-search',
-        title: 'Fix User Lookup',
-        description: '`findUserById` is crashing. Calculate the `mid` index correctly inside the while loop.',
-        difficulty: 'medium',
-        completed: false,
-        codeSnippet: '',
-    },
-    {
-        id: 'task-fibonacci',
-        title: 'Stabilize Energy Stream',
-        description: '`calculateFibonacci` causes a stack overflow. Add the missing base case for n <= 1.',
-        difficulty: 'medium',
-        completed: false,
-        codeSnippet: '',
-    },
-    {
-        id: 'task-validate-token',
-        title: 'Patch Security Protocol',
-        description: '`validateToken` accepts invalid keys. Add the logic to check `stack.pop()` against the current character.',
-        difficulty: 'hard',
-        completed: false,
-        codeSnippet: '',
-    }
-];

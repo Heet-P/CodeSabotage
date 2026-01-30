@@ -4,7 +4,7 @@ exports.GameService = void 0;
 const lobbyService_1 = require("./lobbyService");
 const tasks_1 = require("../data/tasks");
 // Mock Tasks for now
-const MOCK_TASKS = tasks_1.COMPLEX_TASKS;
+const MOCK_TASKS = tasks_1.GAP_FILL_TASKS;
 const EMERGENCY_TASKS = [
     {
         id: 'emergency-1',
@@ -119,50 +119,72 @@ class GameService {
         // Verification Logic
         try {
             switch (taskId) {
-                // Normal Tasks
-                // Complex Tasks
-                case 'task-api-ratelimit':
-                    const rateLimiterCheck = new Function(code + '\nreturn test();');
-                    const result1 = rateLimiterCheck();
-                    // Basic sanity check: 5 requests allowed
-                    if (result1 !== 5) {
-                        return { success: false, message: `Expected 5 allowed requests, got ${result1}` };
-                    }
-                    if (!code.includes('Date.now()') && !code.includes('timestamp')) {
-                        return { success: false, message: 'Must use timestamps for rate limiting.' };
-                    }
-                    break;
-                case 'task-order-processing':
-                    const orderCheck = new Function(code + '\nreturn testOrder();');
-                    const result2 = orderCheck();
-                    if (typeof result2 === 'string' && result2.includes('Insufficient Stock')) {
-                        // This means the code threw an error correctly or incorrectly? 
-                        // Wait, the testOrder calls with item-101 which has 5 stock. It SHOULD succeed.
-                        return { success: false, message: 'Order for in-stock item failed.' };
-                    }
-                    if (!result2.transactionId) {
-                        return { success: false, message: 'Did not return transaction receipt.' };
-                    }
-                    // Additional check: Try to process out of stock
-                    const outOfStockCheck = new Function(code + `
-                        try {
-                            processor.processOrder({ id:'x', userId:'u', itemId:'item-102', quantity:1, price:10 });
-                            return 'passed';
-                        } catch(e) { return 'failed'; }
+                // Gap-Fill Tasks (Monolithic)
+                case 'task-stack-push':
+                    const stackCheck = new Function(code + `
+                        const sys = new SystemController();
+                        sys.stackPush(10);
+                        sys.stackPush(20);
+                        if (sys.storage.length !== 2) return 'Storage empty';
+                        if (sys.storage[1] !== 20) return 'Wrong order';
+                        return 'passed';
                     `);
-                    if (outOfStockCheck() === 'passed') {
-                        return { success: false, message: 'Failed to block out-of-stock order.' };
+                    if (stackCheck() !== 'passed')
+                        return { success: false, message: 'Stack Push implementation failed.' };
+                    break;
+                case 'task-queue-dequeue':
+                    const queueCheck = new Function(code + `
+                        const sys = new SystemController();
+                        sys.queue = ['a', 'b'];
+                        const val = sys.queueDequeue();
+                        if (val !== 'a') return 'Returned wrong value';
+                        if (sys.queue.length !== 1) return 'Did not remove item';
+                        return 'passed';
+                    `);
+                    const qRes = queueCheck();
+                    if (qRes !== 'passed')
+                        return { success: false, message: qRes };
+                    break;
+                case 'task-binary-search':
+                    const bsearchCheck = new Function(code + `
+                        const sys = new SystemController();
+                        // users: [1, 4, 7, 12]
+                        if (sys.findUserById(7)?.name !== 'Navigator') return 'Failed to find existing user 7';
+                        if (sys.findUserById(1)?.name !== 'Admin') return 'Failed to find existing user 1';
+                        if (sys.findUserById(99) !== null) return 'Found non-existent user';
+                        return 'passed';
+                    `);
+                    const bsRes = bsearchCheck();
+                    if (bsRes !== 'passed')
+                        return { success: false, message: bsRes };
+                    break;
+                case 'task-fibonacci':
+                    // Timeout protection likely needed in real world, but here we trust basic checks
+                    const fibCheck = new Function(code + `
+                        const sys = new SystemController();
+                        if (sys.calculateFibonacci(0) !== 0) return 'Fib(0) failed';
+                        if (sys.calculateFibonacci(1) !== 1) return 'Fib(1) failed';
+                        if (sys.calculateFibonacci(5) !== 5) return 'Fib(5) failed';
+                        return 'passed';
+                    `);
+                    try {
+                        if (fibCheck() !== 'passed')
+                            return { success: false, message: 'Fibonacci logic incorrect.' };
+                    }
+                    catch (e) {
+                        return { success: false, message: 'Stack Overflow or Error' };
                     }
                     break;
-                case 'task-auth-middleware':
-                    const authCheck = new Function(code + '\nreturn testAuth();');
-                    const result3 = authCheck();
-                    if (!result3 || result3.username !== 'admin') {
-                        return { success: false, message: 'Token verification failed.' };
-                    }
-                    if (!code.includes('split') || !code.includes('verifySignature')) {
-                        return { success: false, message: 'Must verify signature.' };
-                    }
+                case 'task-validate-token':
+                    const tokenCheck = new Function(code + `
+                        const sys = new SystemController();
+                        if (!sys.validateToken('()[]{}')) return 'Valid token rejected';
+                        if (sys.validateToken('(]')) return 'Invalid token accepted';
+                        if (sys.validateToken('([)]')) return 'Invalid nesting accepted';
+                        return 'passed';
+                    `);
+                    if (tokenCheck() !== 'passed')
+                        return { success: false, message: 'Token validation logic incorrect.' };
                     break;
                 // Emergency Tasks
                 case 'emergency-1':
