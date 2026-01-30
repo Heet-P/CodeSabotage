@@ -231,7 +231,7 @@ export default function LobbyPage() {
                                 <div className="w-2 h-2 bg-[#ff5e57] rounded-sm"></div>
                                 <div className="w-2 h-2 bg-[#ffdd59] rounded-sm"></div>
                                 <div className="w-2 h-2 bg-[#05c46b] rounded-sm"></div>
-                                <span className="ml-2 font-mono text-[10px] text-[#d2dae2]">main.py</span>
+                                <span className="ml-2 font-mono text-[10px] text-[#d2dae2]">script.js</span>
                             </div>
 
                             <div className="flex-1 relative overflow-hidden">
