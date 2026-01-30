@@ -6,14 +6,49 @@ const gameService_1 = require("../services/gameService");
 const lobbyManager = lobbyService_1.LobbyManager.getInstance();
 const gameService = new gameService_1.GameService();
 const meltdownTimers = new Map();
+let gameLoopInterval = null;
+const socketMap = new Map();
+// Global Game Loop (1s Interval)
 const setupSocketHandlers = (io) => {
+    if (gameLoopInterval)
+        clearInterval(gameLoopInterval);
+    // Global Game Loop (1s Interval)
+    gameLoopInterval = setInterval(() => {
+        const lobbies = lobbyManager.getAllLobbies();
+        lobbies.forEach(lobby => {
+            if (lobby.status === 'in-progress' && !lobby.isTimerPaused && (lobby.timeRemaining !== undefined)) {
+                lobby.timeRemaining--;
+                if (lobby.timeRemaining <= 0) {
+                    // Time Limit Exceeded - Hackers Win
+                    lobby.status = 'ended';
+                    lobby.winner = 'hackers';
+                    lobby.winReason = 'Time Limit Exceeded';
+                    io.to(lobby.id).emit('game:ended', lobby);
+                }
+                // Emit update to clients
+                io.to(lobby.id).emit('lobby:updated', lobby);
+            }
+        });
+    }, 1000);
     io.on('connection', (socket) => {
         console.log('User connected:', socket.id);
-        socket.on('lobby:join', (lobbyId) => {
+        socket.on('lobby:join', ({ lobbyId, playerId }) => {
             const lobby = lobbyManager.getLobby(lobbyId);
             if (lobby) {
                 socket.join(lobbyId);
+                socketMap.set(socket.id, { lobbyId, playerId });
                 io.to(lobbyId).emit('lobby:updated', lobby);
+            }
+        });
+        socket.on('lobby:leave', (lobbyId) => {
+            const data = socketMap.get(socket.id);
+            if (data) {
+                const updatedLobby = lobbyManager.removePlayer(lobbyId, data.playerId);
+                socket.leave(lobbyId);
+                socketMap.delete(socket.id);
+                if (updatedLobby) {
+                    io.to(lobbyId).emit('lobby:updated', updatedLobby);
+                }
             }
         });
         socket.on('game:start', (lobbyId) => {
@@ -25,6 +60,15 @@ const setupSocketHandlers = (io) => {
             }
             catch (e) {
                 console.error('Error starting game:', e);
+                socket.emit('error', e.message);
+            }
+        });
+        socket.on('lobby:settings:update', ({ lobbyId, settings }) => {
+            try {
+                const lobby = lobbyManager.updateSettings(lobbyId, settings);
+                io.to(lobbyId).emit('lobby:updated', lobby);
+            }
+            catch (e) {
                 socket.emit('error', e.message);
             }
         });
@@ -126,7 +170,17 @@ const setupSocketHandlers = (io) => {
         });
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
-            // Handle player disconnect/cleanup if needed
+            const data = socketMap.get(socket.id);
+            if (data) {
+                const { lobbyId, playerId } = data;
+                console.log(`Removing player ${playerId} from lobby ${lobbyId} due to disconnect`);
+                const updatedLobby = lobbyManager.removePlayer(lobbyId, playerId);
+                socketMap.delete(socket.id);
+                if (updatedLobby) {
+                    io.to(lobbyId).emit('lobby:updated', updatedLobby);
+                    io.to(lobbyId).emit('player:left', playerId);
+                }
+            }
         });
     });
 };

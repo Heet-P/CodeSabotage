@@ -29,7 +29,8 @@ class LobbyManager {
                 imposterCount: 1,
                 taskCount: 5,
                 discussionTime: 60,
-                votingTime: 30
+                votingTime: 30,
+                timeLimit: 120 // Default 2 minutes
             },
             status: 'waiting',
             createdAt: Date.now()
@@ -39,6 +40,9 @@ class LobbyManager {
     }
     getLobby(lobbyId) {
         return this.lobbies.get(lobbyId);
+    }
+    getAllLobbies() {
+        return Array.from(this.lobbies.values());
     }
     joinLobby(lobbyId, playerId, username) {
         const lobby = this.lobbies.get(lobbyId);
@@ -57,6 +61,15 @@ class LobbyManager {
             color: this.getRandomColor()
         };
         lobby.players.push(newPlayer);
+        return lobby;
+    }
+    updateSettings(lobbyId, settings) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby)
+            throw new Error('Lobby not found');
+        if (lobby.status !== 'waiting')
+            throw new Error('Cannot change settings while game is in progress');
+        lobby.settings = { ...lobby.settings, ...settings };
         return lobby;
     }
     removePlayer(lobbyId, playerId) {

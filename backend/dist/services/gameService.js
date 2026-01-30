@@ -2,33 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameService = void 0;
 const lobbyService_1 = require("./lobbyService");
+const tasks_1 = require("../data/tasks");
 // Mock Tasks for now
-const MOCK_TASKS = [
-    {
-        id: 'task-1',
-        title: 'Fix Syntax Error',
-        description: 'Find and fix the syntax error in the code.',
-        difficulty: 'easy',
-        completed: false,
-        codeSnippet: 'function hello() {\n  console.log("Hello World"\n}',
-    },
-    {
-        id: 'task-2',
-        title: 'Implement Sum',
-        description: 'Write a function that returns the sum of two numbers.',
-        difficulty: 'easy',
-        completed: false,
-        codeSnippet: 'function sum(a, b) {\n  // Your code here\n}',
-    },
-    {
-        id: 'task-3',
-        title: 'Reverse String',
-        description: 'Write a function that reverses a string.',
-        difficulty: 'medium',
-        completed: false,
-        codeSnippet: 'function reverse(str) {\n  // Your code here\n}',
-    }
-];
+const MOCK_TASKS = tasks_1.COMPLEX_TASKS;
 const EMERGENCY_TASKS = [
     {
         id: 'emergency-1',
@@ -82,6 +58,8 @@ class GameService {
         // Update Status
         lobby.status = 'in-progress';
         lobby.taskProgress = 0;
+        lobby.timeRemaining = lobby.settings.timeLimit || 60; // Default to 60s if not set
+        lobby.isTimerPaused = false;
         return lobby;
     }
     assignRoles(lobby) {
@@ -142,23 +120,48 @@ class GameService {
         try {
             switch (taskId) {
                 // Normal Tasks
-                case 'task-1': // Fix Syntax Error
-                    // Check if it parses as valid JS
-                    new Function(code);
-                    // Also check if they actually kept the logic (optional, but simple check)
-                    if (!code.includes('console.log'))
-                        return { success: false, message: 'You removed the console.log!' };
-                    break;
-                case 'task-2': // Implement Sum
-                    const sumFunc = new Function('a', 'b', code + '\nreturn sum(a, b);');
-                    if (sumFunc(2, 3) !== 5 || sumFunc(10, -10) !== 0) {
-                        return { success: false, message: 'Incorrect implementation. Try sum(2, 3) -> 5' };
+                // Complex Tasks
+                case 'task-api-ratelimit':
+                    const rateLimiterCheck = new Function(code + '\nreturn test();');
+                    const result1 = rateLimiterCheck();
+                    // Basic sanity check: 5 requests allowed
+                    if (result1 !== 5) {
+                        return { success: false, message: `Expected 5 allowed requests, got ${result1}` };
+                    }
+                    if (!code.includes('Date.now()') && !code.includes('timestamp')) {
+                        return { success: false, message: 'Must use timestamps for rate limiting.' };
                     }
                     break;
-                case 'task-3': // Reverse String
-                    const reverseFunc = new Function('str', code + '\nreturn reverse(str);');
-                    if (reverseFunc('hello') !== 'olleh' || reverseFunc('world') !== 'dlrow') {
-                        return { success: false, message: 'Incorrect implementation.' };
+                case 'task-order-processing':
+                    const orderCheck = new Function(code + '\nreturn testOrder();');
+                    const result2 = orderCheck();
+                    if (typeof result2 === 'string' && result2.includes('Insufficient Stock')) {
+                        // This means the code threw an error correctly or incorrectly? 
+                        // Wait, the testOrder calls with item-101 which has 5 stock. It SHOULD succeed.
+                        return { success: false, message: 'Order for in-stock item failed.' };
+                    }
+                    if (!result2.transactionId) {
+                        return { success: false, message: 'Did not return transaction receipt.' };
+                    }
+                    // Additional check: Try to process out of stock
+                    const outOfStockCheck = new Function(code + `
+                        try {
+                            processor.processOrder({ id:'x', userId:'u', itemId:'item-102', quantity:1, price:10 });
+                            return 'passed';
+                        } catch(e) { return 'failed'; }
+                    `);
+                    if (outOfStockCheck() === 'passed') {
+                        return { success: false, message: 'Failed to block out-of-stock order.' };
+                    }
+                    break;
+                case 'task-auth-middleware':
+                    const authCheck = new Function(code + '\nreturn testAuth();');
+                    const result3 = authCheck();
+                    if (!result3 || result3.username !== 'admin') {
+                        return { success: false, message: 'Token verification failed.' };
+                    }
+                    if (!code.includes('split') || !code.includes('verifySignature')) {
+                        return { success: false, message: 'Must verify signature.' };
                     }
                     break;
                 // Emergency Tasks
@@ -266,6 +269,7 @@ class GameService {
             throw new Error('Cannot call meeting during Meltdown!');
         }
         lobby.status = 'meeting';
+        lobby.isTimerPaused = true;
         // Clear any sabotage effects (optional, but good practice)
         return lobby;
     }
@@ -303,6 +307,7 @@ class GameService {
                 endTime: Date.now() + 45000, // 45 seconds
                 tasks: sabotageTasks
             };
+            lobby.isTimerPaused = true;
         }
         return lobby;
     }
@@ -314,6 +319,7 @@ class GameService {
         lobby.sabotage.endTime = null;
         // Remove emergency tasks from players?
         // Optional, keeping them marked as completed is fine.
+        lobby.isTimerPaused = false;
     }
     checkSabotageTimeout(lobbyId) {
         const lobby = this.lobbyManager.getLobby(lobbyId);
@@ -392,6 +398,7 @@ class GameService {
         // Return to game if not ended
         if (lobby.status !== 'ended') {
             lobby.status = 'in-progress';
+            lobby.isTimerPaused = false;
         }
         this.meetingVotes.set(lobby.id, []); // Clear
         return { success: true, lobby, message: resultMsg };
