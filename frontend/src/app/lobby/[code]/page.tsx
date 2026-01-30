@@ -251,6 +251,7 @@ export default function LobbyPage() {
 
                                     return (
                                         <CodeEditor
+                                            key={roomName}
                                             roomName={roomName}
                                             initialCode={activeTask?.codeSnippet}
                                             onMount={(editor, monaco) => {

@@ -13,6 +13,7 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ roomName, initialCode, onMount }: CodeEditorProps) {
+    console.log(`[CodeEditor] Init with Room: ${roomName}, HasInitialCode: ${!!initialCode}`);
     const { user } = useAuth();
     const editorRef = useRef<any>(null);
     const [provider, setProvider] = useState<WebsocketProvider | null>(null);
@@ -43,11 +44,16 @@ export default function CodeEditor({ roomName, initialCode, onMount }: CodeEdito
 
         // Wait for connection/sync to determine if we need to inject initialCode
         wsProvider.on('sync', (isSynced: boolean) => {
+            console.log(`[CodeEditor] Sync event: ${isSynced}, Room: ${roomName}`);
             if (isSynced && initialCode) {
                 const monacoText = doc.getText('monaco');
+                console.log(`[CodeEditor] Doc length: ${monacoText.length}`);
                 if (monacoText.length === 0) {
+                    console.log('[CodeEditor] Injecting initial code...');
                     // Room is new/empty, inject boilerplate
                     monacoText.insert(0, initialCode);
+                } else {
+                    console.log('[CodeEditor] Doc not empty, skipping injection.');
                 }
             }
         });
